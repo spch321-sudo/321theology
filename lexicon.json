@@ -1,0 +1,688 @@
+{
+ "H3045": {
+  "code": "H3045",
+  "original": "יָדַע",
+  "translit": "yada’",
+  "label": "יָדַע yada’（H3045）｜動詞｜「認識」",
+  "lessons": [
+   "L01",
+   "L08"
+  ]
+ },
+ "G1097": {
+  "code": "G1097",
+  "original": "γινώσκω",
+  "translit": "ginōskō",
+  "label": "γινώσκω ginōskō（G1097）｜約17:3",
+  "lessons": [
+   "L01",
+   "L04",
+   "L06"
+  ]
+ },
+ "G1922": {
+  "code": "G1922",
+  "original": "ἐπίγνωσις",
+  "translit": "epignōsis",
+  "label": "ἐπίγνωσις epignōsis（G1922）｜西1:9-10；弗1:17",
+  "lessons": [
+   "L01",
+   "L04"
+  ]
+ },
+ "G1834": {
+  "code": "G1834",
+  "original": "ἐξηγέομαι",
+  "translit": "exēgeomai",
+  "label": "ἐξηγέομαι exēgeomai（G1834）｜約1:18",
+  "lessons": [
+   "L01",
+   "L05",
+   "L16",
+   "L19"
+  ]
+ },
+ "G3718": {
+  "code": "G3718",
+  "original": "ὀρθοτομέω",
+  "translit": "orthotomeō",
+  "label": "ὀρθοτομέω orthotomeō（G3718）｜提後2:15",
+  "lessons": [
+   "L01",
+   "L13",
+   "L14",
+   "L16"
+  ]
+ },
+ "G2316": {
+  "code": "G2316",
+  "original": "θεός",
+  "translit": "theos",
+  "label": "θεός theos",
+  "lessons": [
+   "L01"
+  ]
+ },
+ "G3056": {
+  "code": "G3056",
+  "original": "λόγος",
+  "translit": "",
+  "label": "G3056",
+  "lessons": [
+   "L01",
+   "L05",
+   "L09"
+  ]
+ },
+ "G1271": {
+  "code": "G1271",
+  "original": "διάνοια",
+  "translit": "",
+  "label": "διάνοια",
+  "lessons": [
+   "L01"
+  ]
+ },
+ "G5296": {
+  "code": "G5296",
+  "original": "ὑποτύπωσις",
+  "translit": "hypotypōsis",
+  "label": "ὑποτύπωσις hypotypōsis（G5296）｜提後1:13「規模」",
+  "lessons": [
+   "L02"
+  ]
+ },
+ "G3825": {
+  "code": "G3825",
+  "original": "πάλιν",
+  "translit": "",
+  "label": "πάλιν γέγραπται（G3825 + G1125）｜太4:7「又記著說」",
+  "lessons": [
+   "L02",
+   "L19"
+  ]
+ },
+ "G1125": {
+  "code": "G1125",
+  "original": "πάλιν",
+  "translit": "",
+  "label": "πάλιν γέγραπται（G3825 + G1125）｜太4:7「又記著說」",
+  "lessons": [
+   "L02"
+  ]
+ },
+ "G1012": {
+  "code": "G1012",
+  "original": "βουλή",
+  "translit": "boulē",
+  "label": "βουλή boulē（G1012）｜徒20:27「旨意」",
+  "lessons": [
+   "L02"
+  ]
+ },
+ "G356": {
+  "code": "G356",
+  "original": "ἀναλογία",
+  "translit": "analogia",
+  "label": "ἀναλογία analogia（G356）｜羅12:6「程度」",
+  "lessons": [
+   "L02",
+   "L19"
+  ]
+ },
+ "G602": {
+  "code": "G602",
+  "original": "ἀποκάλυψις",
+  "translit": "apokalypsis",
+  "label": "ἀποκάλυψις apokalypsis（G602）／ἀποκαλύπτω（G601）",
+  "lessons": [
+   "L03",
+   "L18"
+  ]
+ },
+ "G601": {
+  "code": "G601",
+  "original": "ἀποκάλυψις",
+  "translit": "apokalypsis",
+  "label": "ἀποκάλυψις apokalypsis（G602）／ἀποκαλύπτω（G601）",
+  "lessons": [
+   "L03"
+  ]
+ },
+ "H1540": {
+  "code": "H1540",
+  "original": "גָּלָה",
+  "translit": "galah",
+  "label": "גָּלָה galah（H1540）｜舊約的「啟示／顯露」",
+  "lessons": [
+   "L03"
+  ]
+ },
+ "G2980": {
+  "code": "G2980",
+  "original": "λαλέω",
+  "translit": "laleō",
+  "label": "λαλέω laleō（G2980）｜來1:1「曉諭」",
+  "lessons": [
+   "L03"
+  ]
+ },
+ "G5319": {
+  "code": "G5319",
+  "original": "φανερόω",
+  "translit": "phaneroō",
+  "label": "φανερόω phaneroō（G5319）｜羅1:19「顯明」",
+  "lessons": [
+   "L03",
+   "L04"
+  ]
+ },
+ "H3519": {
+  "code": "H3519",
+  "original": "כָּבוֹד",
+  "translit": "kabod",
+  "label": "כָּבוֹד kabod（H3519）｜詩19:1「榮耀」",
+  "lessons": [
+   "L04"
+  ]
+ },
+ "H1697": {
+  "code": "H1697",
+  "original": "דָּבָר",
+  "translit": "dabar",
+  "label": "דָּבָר dabar（H1697）｜詩19:3-4「言語」",
+  "lessons": [
+   "L04",
+   "L09"
+  ]
+ },
+ "G4637": {
+  "code": "G4637",
+  "original": "σκηνόω",
+  "translit": "skēnoō",
+  "label": "σκηνόω skēnoō（G4637）｜約1:14「住在我們中間」",
+  "lessons": [
+   "L05"
+  ]
+ },
+ "G1504": {
+  "code": "G1504",
+  "original": "εἰκών",
+  "translit": "eikōn",
+  "label": "εἰκών eikōn（G1504）｜西1:15「像」",
+  "lessons": [
+   "L05"
+  ]
+ },
+ "G3439": {
+  "code": "G3439",
+  "original": "μονογενής",
+  "translit": "monogenēs",
+  "label": "μονογενής monogenēs（G3439）｜約1:18「獨生」",
+  "lessons": [
+   "L05"
+  ]
+ },
+ "G4561": {
+  "code": "G4561",
+  "original": "σάρξ",
+  "translit": "sarx",
+  "label": "σάρξ sarx（G4561）｜約1:14「肉身」",
+  "lessons": [
+   "L05"
+  ]
+ },
+ "G5206": {
+  "code": "G5206",
+  "original": "υἱοθεσία",
+  "translit": "",
+  "label": "υἱοθεσία",
+  "lessons": [
+   "L05"
+  ]
+ },
+ "H2617": {
+  "code": "H2617",
+  "original": "חֶסֶד",
+  "translit": "",
+  "label": "H2617",
+  "lessons": [
+   "L05",
+   "L17"
+  ]
+ },
+ "H8451": {
+  "code": "H8451",
+  "original": "תּוֹרָה",
+  "translit": "torah",
+  "label": "תּוֹרָה torah（H8451）｜賽8:20「訓誨」",
+  "lessons": [
+   "L06",
+   "L14",
+   "L15",
+   "L17"
+  ]
+ },
+ "G1124": {
+  "code": "G1124",
+  "original": "γραφή",
+  "translit": "graphē",
+  "label": "γραφή graphē（G1124）＋ θεόπνευστος theopneustos（G2315）｜提後3:16",
+  "lessons": [
+   "L06",
+   "L09",
+   "L10"
+  ]
+ },
+ "G2315": {
+  "code": "G2315",
+  "original": "γραφή",
+  "translit": "graphē",
+  "label": "γραφή graphē（G1124）＋ θεόπνευστος theopneustos（G2315）｜提後3:16",
+  "lessons": [
+   "L06",
+   "L09"
+  ]
+ },
+ "G3563": {
+  "code": "G3563",
+  "original": "νοῦς",
+  "translit": "nous",
+  "label": "νοῦς nous（G3563）｜林前14:15「悟性」",
+  "lessons": [
+   "L06",
+   "L07",
+   "L12",
+   "L13",
+   "L16"
+  ]
+ },
+ "G4102": {
+  "code": "G4102",
+  "original": "πίστις",
+  "translit": "pistis",
+  "label": "πίστις pistis（G4102）／πιστεύω pisteuō（G4100）",
+  "lessons": [
+   "L07"
+  ]
+ },
+ "G4100": {
+  "code": "G4100",
+  "original": "πίστις",
+  "translit": "pistis",
+  "label": "πίστις pistis（G4102）／πιστεύω pisteuō（G4100）",
+  "lessons": [
+   "L07"
+  ]
+ },
+ "G1680": {
+  "code": "G1680",
+  "original": "ἐλπίς",
+  "translit": "elpis",
+  "label": "ἐλπίς elpis（G1680）｜彼前3:15「盼望」",
+  "lessons": [
+   "L07"
+  ]
+ },
+ "H8085": {
+  "code": "H8085",
+  "original": "שָׁמַע",
+  "translit": "shama’",
+  "label": "שָׁמַע shama’（H8085）｜申6:4「聽」",
+  "lessons": [
+   "L08"
+  ]
+ },
+ "G26": {
+  "code": "G26",
+  "original": "ἀγάπη",
+  "translit": "agapē",
+  "label": "ἀγάπη agapē（G26）＋ καρδία kardia（G2588）｜提前1:5",
+  "lessons": [
+   "L08"
+  ]
+ },
+ "G2588": {
+  "code": "G2588",
+  "original": "ἀγάπη",
+  "translit": "agapē",
+  "label": "ἀγάπη agapē（G26）＋ καρδία kardia（G2588）｜提前1:5",
+  "lessons": [
+   "L08",
+   "L13"
+  ]
+ },
+ "G3339": {
+  "code": "G3339",
+  "original": "μεταμορφόω",
+  "translit": "metamorphoō",
+  "label": "μεταμορφόω metamorphoō（G3339）＋ ἀνακαίνωσις anakainōsis（G342）｜羅12:2",
+  "lessons": [
+   "L08",
+   "L12"
+  ]
+ },
+ "G342": {
+  "code": "G342",
+  "original": "μεταμορφόω",
+  "translit": "metamorphoō",
+  "label": "μεταμορφόω metamorphoō（G3339）＋ ἀνακαίνωσις anakainōsis（G342）｜羅12:2",
+  "lessons": [
+   "L08",
+   "L12"
+  ]
+ },
+ "G3144": {
+  "code": "G3144",
+  "original": "μάρτυς",
+  "translit": "martys",
+  "label": "μάρτυς martys（G3144）｜見證人",
+  "lessons": [
+   "L10",
+   "L18"
+  ]
+ },
+ "G1577": {
+  "code": "G1577",
+  "original": "ἐκκλησία",
+  "translit": "ekklēsia",
+  "label": "ἐκκλησία ekklēsia（G1577）＋ קָהָל qahal（H6951）",
+  "lessons": [
+   "L10"
+  ]
+ },
+ "H6951": {
+  "code": "H6951",
+  "original": "ἐκκλησία",
+  "translit": "ekklēsia",
+  "label": "ἐκκλησία ekklēsia（G1577）＋ קָהָל qahal（H6951）",
+  "lessons": [
+   "L10"
+  ]
+ },
+ "G893": {
+  "code": "G893",
+  "original": "ἀψευδής",
+  "translit": "apseudēs",
+  "label": "ἀψευδής apseudēs（G893）｜多1:2「無謊言的」",
+  "lessons": [
+   "L11"
+  ]
+ },
+ "G2503": {
+  "code": "G2503",
+  "original": "ἰῶτα",
+  "translit": "iōta",
+  "label": "ἰῶτα iōta（G2503）＋ κεραία keraia（G2762）｜太5:18「一點一畫」",
+  "lessons": [
+   "L11"
+  ]
+ },
+ "G2762": {
+  "code": "G2762",
+  "original": "ἰῶτα",
+  "translit": "iōta",
+  "label": "ἰῶτα iōta（G2503）＋ κεραία keraia（G2762）｜太5:18「一點一畫」",
+  "lessons": [
+   "L11"
+  ]
+ },
+ "H6884": {
+  "code": "H6884",
+  "original": "צָרַף",
+  "translit": "tsaraph",
+  "label": "צָרַף tsaraph（H6884）｜詩12:6「煉過」",
+  "lessons": [
+   "L11"
+  ]
+ },
+ "H5324": {
+  "code": "H5324",
+  "original": "נָצַב",
+  "translit": "natsab",
+  "label": "נָצַב natsab（H5324）｜詩119:89「安定」",
+  "lessons": [
+   "L11"
+  ]
+ },
+ "G199": {
+  "code": "G199",
+  "original": "ἀκριβῶς",
+  "translit": "akribōs",
+  "label": "ἀκριβῶς akribōs（G199）／καθεξῆς kathexēs（G2517）／ἀσφάλεια asphaleia（G803）｜路1:1-4",
+  "lessons": [
+   "L11"
+  ]
+ },
+ "G2517": {
+  "code": "G2517",
+  "original": "ἀκριβῶς",
+  "translit": "akribōs",
+  "label": "ἀκριβῶς akribōs（G199）／καθεξῆς kathexēs（G2517）／ἀσφάλεια asphaleia（G803）｜路1:1-4",
+  "lessons": [
+   "L11"
+  ]
+ },
+ "G803": {
+  "code": "G803",
+  "original": "ἀκριβῶς",
+  "translit": "akribōs",
+  "label": "ἀκριβῶς akribōs（G199）／καθεξῆς kathexēs（G2517）／ἀσφάλεια asphaleia（G803）｜路1:1-4",
+  "lessons": [
+   "L11"
+  ]
+ },
+ "G739": {
+  "code": "G739",
+  "original": "ἄρτιος",
+  "translit": "artios",
+  "label": "ἄρτιος artios（G739）＋ ἐξαρτίζω exartizō（G1822）｜提後3:17",
+  "lessons": [
+   "L12"
+  ]
+ },
+ "G1822": {
+  "code": "G1822",
+  "original": "ἄρτιος",
+  "translit": "artios",
+  "label": "ἄρτιος artios（G739）＋ ἐξαρτίζω exartizō（G1822）｜提後3:17",
+  "lessons": [
+   "L12"
+  ]
+ },
+ "G5624": {
+  "code": "G5624",
+  "original": "ὠφέλιμος",
+  "translit": "ōphelimos",
+  "label": "ὠφέλιμος ōphelimos（G5624）｜提後3:16「有益的」",
+  "lessons": [
+   "L12"
+  ]
+ },
+ "H8549": {
+  "code": "H8549",
+  "original": "תָּמִים",
+  "translit": "tamim",
+  "label": "תָּמִים tamim（H8549）｜詩19:7「全備」",
+  "lessons": [
+   "L12"
+  ]
+ },
+ "H3477": {
+  "code": "H3477",
+  "original": "",
+  "translit": "",
+  "label": "正直",
+  "lessons": [
+   "L12"
+  ],
+  "gloss": "正直"
+ },
+ "H1249": {
+  "code": "H1249",
+  "original": "",
+  "translit": "",
+  "label": "清潔",
+  "lessons": [
+   "L12"
+  ],
+  "gloss": "清潔"
+ },
+ "H2889": {
+  "code": "H2889",
+  "original": "",
+  "translit": "",
+  "label": "潔淨",
+  "lessons": [
+   "L12"
+  ],
+  "gloss": "潔淨"
+ },
+ "H571": {
+  "code": "H571",
+  "original": "",
+  "translit": "",
+  "label": "真實",
+  "lessons": [
+   "L12"
+  ],
+  "gloss": "真實"
+ },
+ "H5216": {
+  "code": "H5216",
+  "original": "נִיר",
+  "translit": "nir",
+  "label": "נִיר nir（H5216）＋ אוֹר or（H216）｜詩119:105",
+  "lessons": [
+   "L13"
+  ]
+ },
+ "H216": {
+  "code": "H216",
+  "original": "נִיר",
+  "translit": "nir",
+  "label": "נִיר nir（H5216）＋ אוֹר or（H216）｜詩119:105",
+  "lessons": [
+   "L13"
+  ]
+ },
+ "H5641": {
+  "code": "H5641",
+  "original": "סָתַר",
+  "translit": "sathar",
+  "label": "סָתַר sathar（H5641）｜申29:29「隱祕」",
+  "lessons": [
+   "L13"
+  ]
+ },
+ "G4137": {
+  "code": "G4137",
+  "original": "πληρόω",
+  "translit": "plēroō",
+  "label": "πληρόω plēroō（G4137）｜太5:17「成全」",
+  "lessons": [
+   "L14",
+   "L19"
+  ]
+ },
+ "G4983": {
+  "code": "G4983",
+  "original": "σῶμα",
+  "translit": "sōma",
+  "label": "σῶμα sōma（G4983）｜西2:17「形體」",
+  "lessons": [
+   "L14"
+  ]
+ },
+ "H1897": {
+  "code": "H1897",
+  "original": "הָגָה",
+  "translit": "hagah",
+  "label": "הָגָה hagah（H1897）｜詩1:2；書1:8「思想」",
+  "lessons": [
+   "L15",
+   "L17"
+  ]
+ },
+ "G1756": {
+  "code": "G1756",
+  "original": "ἐνεργής",
+  "translit": "energēs",
+  "label": "ἐνεργής energēs（G1756）｜來4:12「有功效的」",
+  "lessons": [
+   "L15"
+  ]
+ },
+ "H3820": {
+  "code": "H3820",
+  "original": "לֵב",
+  "translit": "lev",
+  "label": "לֵב lev（H3820）｜詩119:11「藏在心裡」",
+  "lessons": [
+   "L15"
+  ]
+ },
+ "G350": {
+  "code": "G350",
+  "original": "ἀνακρίνω",
+  "translit": "anakrinō",
+  "label": "ἀνακρίνω anakrinō（G350）｜徒17:11「考查」",
+  "lessons": [
+   "L16"
+  ]
+ },
+ "G1381": {
+  "code": "G1381",
+  "original": "δοκιμάζω",
+  "translit": "dokimazō",
+  "label": "δοκιμάζω dokimazō（G1381）｜帖前5:21「察驗」",
+  "lessons": [
+   "L16"
+  ]
+ },
+ "H2451": {
+  "code": "H2451",
+  "original": "חָכְמָה",
+  "translit": "chokmah",
+  "label": "חָכְמָה chokmah（H2451）｜智慧",
+  "lessons": [
+   "L17"
+  ]
+ },
+ "G2347": {
+  "code": "G2347",
+  "original": "θλῖψις",
+  "translit": "thlipsis",
+  "label": "θλῖψις thlipsis（G2347）＋ ὑπομονή hypomonē（G5281）＋ βασιλεία basileia（G932）｜啟1:9 ★",
+  "lessons": [
+   "L18"
+  ]
+ },
+ "G5281": {
+  "code": "G5281",
+  "original": "θλῖψις",
+  "translit": "thlipsis",
+  "label": "θλῖψις thlipsis（G2347）＋ ὑπομονή hypomonē（G5281）＋ βασιλεία basileia（G932）｜啟1:9 ★",
+  "lessons": [
+   "L18"
+  ]
+ },
+ "G932": {
+  "code": "G932",
+  "original": "θλῖψις",
+  "translit": "thlipsis",
+  "label": "θλῖψις thlipsis（G2347）＋ ὑπομονή hypomonē（G5281）＋ βασιλεία basileia（G932）｜啟1:9 ★",
+  "lessons": [
+   "L18"
+  ]
+ },
+ "G3528": {
+  "code": "G3528",
+  "original": "νικάω",
+  "translit": "nikaō",
+  "label": "νικάω nikaō（G3528）｜啟2-3「得勝的」；啟12:11",
+  "lessons": [
+   "L18"
+  ]
+ }
+}

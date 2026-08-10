@@ -1,0 +1,1518 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=5">
+<meta name="theme-color" content="#174238">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>321系統神學</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" sizes="512x512" href="icon-512.png">
+<style>
+:root{
+  --ink:#20242B; --ink2:#4A5260; --ink3:#79828F;
+  --bg:#FAF8F3; --card:#FFFFFF; --line:#E4DFD4;
+  --p1:#1E3A5F; --p2:#1F4D3D; --p3:#8B5E1A;
+  --accent:var(--p1);
+  --warn:#B8860B;
+  --fs:22px; --lh:1.9;
+  --serif:"Noto Serif TC","Songti TC","Source Han Serif TC",serif;
+  --sans:"PingFang TC","Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif;
+  --safe-b:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--ink);
+  font-family:var(--sans); font-size:var(--fs); line-height:var(--lh);
+  letter-spacing:.03em; -webkit-text-size-adjust:100%;
+  padding-bottom:calc(78px + var(--safe-b));
+}
+a{color:inherit}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+.wrap{max-width:760px;margin:0 auto;padding:0 18px}
+
+/* ---------- 頁首 ---------- */
+.top{position:sticky;top:0;z-index:40;background:rgba(250,248,243,.94);
+  backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:12px;min-height:60px}
+.top h1{font-family:var(--serif);font-size:.92em;margin:0;font-weight:700;letter-spacing:.06em;flex:1;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.iconbtn{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;font-size:.8em;
+  border:1px solid var(--line);background:var(--card);flex:none}
+.iconbtn:active{background:#EFEAE0}
+.iconbtn.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+/* ---------- 分頁列 ---------- */
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:50;background:rgba(255,255,255,.97);
+  backdrop-filter:blur(10px);border-top:1px solid var(--line);
+  padding-bottom:var(--safe-b);display:flex}
+.tabs button{flex:1;padding:10px 2px 12px;font-size:.62em;color:var(--ink3);
+  display:flex;flex-direction:column;align-items:center;gap:3px;letter-spacing:.08em}
+.tabs button b{font-family:var(--serif);font-size:1.5em;font-weight:600;line-height:1}
+.tabs button.on{color:var(--accent)}
+
+/* ---------- 通用 ---------- */
+.sect{padding:22px 0 8px}
+.eyebrow{font-size:.62em;letter-spacing:.28em;color:var(--ink3);margin:0 0 6px}
+h2.big{font-family:var(--serif);font-size:1.35em;font-weight:700;margin:0 0 14px;line-height:1.45}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px 20px;margin:0 0 14px}
+.muted{color:var(--ink3);font-size:.76em;line-height:1.7}
+.bigbtn{display:block;width:100%;background:var(--accent);color:#fff;border-radius:20px;
+  padding:22px 20px;text-align:left;box-shadow:0 6px 20px rgba(30,58,95,.18)}
+.bigbtn small{display:block;opacity:.75;font-size:.6em;letter-spacing:.2em;margin-bottom:6px}
+.bigbtn b{font-family:var(--serif);font-size:1.05em;font-weight:600;line-height:1.5}
+.pill{display:inline-block;font-size:.58em;letter-spacing:.14em;padding:3px 10px;border-radius:999px;
+  border:1px solid var(--line);color:var(--ink3);vertical-align:middle}
+.pill.A{background:var(--p1);color:#fff;border-color:var(--p1)}
+.pill.B{color:var(--p1);border-color:var(--p1)}
+.pill.C{color:var(--ink3);border-style:dashed}
+
+/* ---------- 課程列表 ---------- */
+.partbar{display:flex;align-items:baseline;gap:10px;margin:26px 0 12px;padding-bottom:8px;
+  border-bottom:2px solid var(--accent)}
+.partbar b{font-family:var(--serif);font-size:1.1em}
+.partbar span{font-size:.68em;color:var(--ink3)}
+.row{display:flex;gap:14px;align-items:center;background:var(--card);border:1px solid var(--line);
+  border-radius:16px;padding:14px 16px;margin-bottom:10px;width:100%;text-align:left}
+.row .num{font-family:var(--serif);font-size:1.15em;font-weight:700;color:var(--accent);
+  min-width:2.1em;text-align:center;flex:none}
+.row .t{flex:1;min-width:0}
+.row .t b{display:block;font-weight:600;font-size:.9em;line-height:1.5}
+.row .t span{display:block;font-size:.66em;color:var(--ink3);margin-top:3px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ---------- 進度環 ---------- */
+.ring{flex:none;width:44px;height:44px}
+.ring circle{fill:none;stroke-width:5}
+.ringbig{width:120px;height:120px;margin:0 auto 6px;display:block}
+.ringbig circle{fill:none;stroke-width:9}
+
+/* ---------- 深度切換 ---------- */
+.depth{display:flex;gap:6px;background:#EFEAE0;padding:5px;border-radius:16px;margin:14px 0 4px}
+.depth button{flex:1;padding:11px 4px;border-radius:12px;font-size:.68em;letter-spacing:.06em;color:var(--ink2)}
+.depth button.on{background:var(--card);color:var(--accent);font-weight:700;
+  box-shadow:0 2px 6px rgba(0,0,0,.07)}
+.depthnote{font-size:.62em;color:var(--ink3);text-align:center;margin:2px 0 14px;letter-spacing:.08em}
+
+/* ---------- 內文 ---------- */
+.body{font-size:1em}
+.body p,.body .pp{margin:0 0 1.05em}
+.body .pp>ul:last-child,.body .pp>.tw:last-child{margin-bottom:0}
+.body h4{font-family:var(--serif);font-size:1em;font-weight:700;color:var(--accent);
+  margin:1.5em 0 .5em;padding-left:12px;border-left:4px solid var(--accent)}
+.body ul{margin:0 0 1.05em;padding-left:1.15em}
+.body li{margin:0 0 .6em}
+.body strong{font-weight:700}
+.body .quote{display:block;margin:.7em 0;padding:12px 16px;background:#F2EFE7;border-left:4px solid var(--p3);
+  border-radius:0 10px 10px 0;font-size:.94em}
+.body .vref{display:block;font-family:var(--serif);font-weight:700;color:var(--accent);margin-bottom:2px}
+.body .vtext{display:block;padding-left:14px;border-left:3px solid var(--line);color:var(--ink2);font-size:.94em}
+.body a.lx{color:var(--p3);font-weight:700;border-bottom:1px dashed var(--p3);white-space:nowrap}
+.body a.vs{color:var(--accent);border-bottom:1px solid rgba(30,58,95,.28);white-space:nowrap}
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:1em -20px;padding:0 20px}
+.body table{border-collapse:collapse;min-width:100%;font-size:.8em;line-height:1.65}
+.body th,.body td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}
+.body th{background:#EDF1F6;font-weight:700;white-space:nowrap}
+.body pre.ascii,.body pre.map{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.6em;line-height:1.6;
+  background:#F2EFE7;padding:14px;border-radius:12px;overflow-x:auto;white-space:pre;margin:1em 0}
+.body pre.map{background:#EDF1F6}
+
+/* ---------- 教師本區塊 ---------- */
+.blk{border:1px solid var(--line);border-radius:16px;background:var(--card);margin-bottom:10px;overflow:hidden}
+.blk>summary{list-style:none;padding:15px 18px;display:flex;gap:11px;align-items:center;cursor:pointer}
+.blk>summary::-webkit-details-marker{display:none}
+.blk>summary .bn{font-family:var(--serif);font-weight:700;color:var(--accent);font-size:.8em;
+  min-width:3.4em;flex:none;font-variant-numeric:tabular-nums}
+.blk>summary .bh{flex:1;font-size:.82em;font-weight:600;line-height:1.5}
+.blk>summary .ar{color:var(--ink3);font-size:.7em}
+.blk[open]>summary{border-bottom:1px solid var(--line);background:#FBF9F5}
+.blk .inner{padding:16px 18px 4px}
+
+/* ---------- 八大步驟 ---------- */
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}
+.step{border:1px solid var(--line);border-radius:14px;padding:10px 6px;text-align:center;background:var(--card)}
+.step b{display:block;font-family:var(--serif);font-size:1.05em;color:var(--ink3)}
+.step span{display:block;font-size:.56em;letter-spacing:.06em;color:var(--ink3);margin-top:2px}
+.step.done{background:var(--accent);border-color:var(--accent)}
+.step.done b,.step.done span{color:#fff}
+
+/* ---------- 彈出層 ---------- */
+.sheet{position:fixed;inset:0;z-index:80;background:rgba(20,24,30,.42);display:none;
+  align-items:flex-end;justify-content:center}
+.sheet.on{display:flex}
+.sheet .inner{background:var(--bg);width:100%;max-width:760px;max-height:82vh;overflow-y:auto;
+  border-radius:22px 22px 0 0;padding:8px 18px calc(28px + var(--safe-b))}
+.grab{width:44px;height:5px;border-radius:3px;background:var(--line);margin:8px auto 14px}
+.lxword{font-family:var(--serif);font-size:1.5em;line-height:1.4;margin:0 0 2px}
+.lxcode{font-size:.62em;letter-spacing:.14em;color:var(--p3);font-weight:700}
+
+/* ---------- 表單 ---------- */
+textarea,input[type=text]{width:100%;font:inherit;font-size:.85em;padding:12px 14px;border:1px solid var(--line);
+  border-radius:14px;background:var(--card);color:var(--ink);resize:vertical}
+.btn{display:inline-block;padding:13px 20px;border-radius:14px;border:1px solid var(--line);
+  background:var(--card);font-size:.76em;letter-spacing:.06em}
+.btn.pri{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btnrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+
+/* ---------- 小組現場 ---------- */
+.live{position:fixed;inset:0;z-index:90;background:#12161C;color:#F3EFE6;display:none;
+  flex-direction:column;padding:calc(18px + env(safe-area-inset-top,0px)) 20px calc(18px + var(--safe-b))}
+.live.on{display:flex}
+.live .lvbar{height:6px;background:#2A313B;border-radius:3px;overflow:hidden;margin-bottom:18px}
+.live .lvbar i{display:block;height:100%;background:#C9A227;transition:width .4s}
+.live .lvbody{flex:1;overflow-y:auto;font-size:1.5em;line-height:1.75;font-family:var(--serif)}
+.live .lvbody .note{font-family:var(--sans);font-size:.5em;line-height:1.7;background:#3A3016;color:#F0DFA8;
+  border-left:4px solid #C9A227;padding:14px 16px;border-radius:0 12px 12px 0;margin-top:22px}
+.live .lvfoot{display:flex;gap:10px;align-items:center;margin-top:16px}
+.live .lvfoot .btn{white-space:nowrap;padding:13px 14px;font-size:.66em}
+.live .lvfoot .btn{background:#1D232C;border-color:#2A313B;color:#F3EFE6}
+.live .clock{font-family:var(--serif);font-size:1.1em;min-width:3.4em;flex:none;font-variant-numeric:tabular-nums}
+
+/* ---------- 繁殖卡 ---------- */
+.tcard{background:var(--card);border:1px solid var(--line);border-radius:20px;overflow:hidden;margin:0 0 14px}
+.tcard .th{background:var(--accent);color:#fff;padding:22px 22px 20px}
+.tcard .th small{display:block;font-size:.56em;letter-spacing:.24em;opacity:.72;margin-bottom:8px}
+.tcard .th b{font-family:var(--serif);font-size:1.18em;font-weight:700;line-height:1.5}
+.tcard .tb{padding:20px 22px 4px}
+.tcard ol{margin:0;padding:0;list-style:none;counter-reset:tl}
+.tcard ol li{counter-increment:tl;position:relative;padding-left:2.1em;margin:0 0 1em;font-size:.92em;line-height:1.75}
+.tcard ol li::before{content:counter(tl);position:absolute;left:0;top:.05em;font-family:var(--serif);
+  font-weight:700;color:var(--accent);font-size:1.05em}
+.tcard .tv{margin:4px 0 18px;padding:14px 18px;background:#F2EFE7;border-left:4px solid var(--p3);
+  border-radius:0 12px 12px 0}
+.tcard .tv p{margin:0;font-family:var(--serif);font-size:.98em;line-height:1.7}
+.tcard .tv span{display:block;text-align:right;font-size:.68em;color:var(--ink3);margin-top:6px}
+.tcard .tq{border-top:1px solid var(--line);padding:18px 22px 22px;margin:0 -22px}
+.tcard .tq small{display:block;font-size:.56em;letter-spacing:.24em;color:var(--ink3);margin-bottom:8px}
+.tcard .tq p{margin:0;font-size:.94em;line-height:1.75;font-weight:600}
+.tcard .tf{background:#F6F3EC;padding:14px 22px;font-size:.6em;color:var(--ink3);line-height:1.7;
+  border-top:1px solid var(--line)}
+#cvwrap img{width:100%;border-radius:16px;border:1px solid var(--line);display:block}
+
+/* ---------- 金句記憶 ---------- */
+.mv{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:28px 24px;text-align:center;margin:0 0 14px}
+.mv .mref{font-size:.66em;letter-spacing:.2em;color:var(--accent);font-weight:700;margin:0 0 16px}
+.mv .mtext{font-family:var(--serif);font-size:1.12em;line-height:2;margin:0}
+.mv .mtext i{font-style:normal;color:var(--p3);opacity:.55}
+.mv .mprog{font-size:.6em;letter-spacing:.14em;color:var(--ink3);margin:18px 0 0}
+
+/* ---------- 畫線 ---------- */
+mark.hl{background:linear-gradient(transparent 58%,rgba(201,162,39,.42) 58%);color:inherit;
+  padding:0 1px;border-radius:2px;cursor:pointer}
+mark.hl.n{background:linear-gradient(transparent 58%,rgba(90,140,200,.38) 58%)}
+mark.hl.n::after{content:"✎";font-size:.62em;color:var(--p1);vertical-align:super;margin-left:2px}
+#selbar{position:fixed;z-index:70;display:none;background:#20242B;border-radius:14px;padding:6px;
+  box-shadow:0 8px 24px rgba(0,0,0,.28);gap:2px}
+#selbar.on{display:flex}
+#selbar button{color:#fff;font-size:.62em;padding:10px 12px;border-radius:10px;white-space:nowrap;letter-spacing:.06em}
+#selbar button:active{background:#333A45}
+
+/* ---------- 錄音 ---------- */
+.rec{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);
+  border-radius:14px;padding:12px 14px;margin:0 0 8px}
+.rec .rt{flex:1;min-width:0;font-size:.72em;color:var(--ink3)}
+.rec audio{width:100%;height:38px}
+.recdot{width:12px;height:12px;border-radius:50%;background:#C0392B;flex:none;animation:bl 1.1s infinite}
+@keyframes bl{50%{opacity:.25}}
+
+/* ---------- AI 小智 ---------- */
+#aibtn{position:fixed;right:16px;bottom:calc(96px + var(--safe-b));z-index:60;width:60px;height:60px;
+  border-radius:50%;background:var(--p1);color:#fff;font-family:var(--serif);font-size:1.05em;font-weight:700;
+  box-shadow:0 8px 22px rgba(30,58,95,.35);display:grid;place-items:center}
+#ai{position:fixed;inset:0;z-index:85;background:rgba(20,24,30,.42);display:none;align-items:flex-end;justify-content:center}
+#ai.on{display:flex}
+#ai .box{background:var(--bg);width:100%;max-width:760px;height:86vh;display:flex;flex-direction:column;
+  border-radius:22px 22px 0 0;overflow:hidden}
+#ai .hd{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--line);background:var(--card)}
+#ai .hd b{font-family:var(--serif);font-size:.92em;flex:1}
+#ai .hd small{font-size:.58em;color:var(--ink3);letter-spacing:.1em}
+#ai .msgs{flex:1;overflow-y:auto;padding:16px 18px}
+#ai .m{margin:0 0 14px;font-size:.84em;line-height:1.85}
+#ai .m.u{text-align:right}
+#ai .m.u span{display:inline-block;background:var(--p1);color:#fff;padding:11px 15px;border-radius:16px 16px 4px 16px;max-width:86%;text-align:left}
+#ai .m.a span{display:inline-block;background:var(--card);border:1px solid var(--line);padding:13px 16px;
+  border-radius:16px 16px 16px 4px;max-width:94%}
+#ai .quick{display:flex;gap:8px;overflow-x:auto;padding:10px 18px 0}
+#ai .quick button{flex:none;border:1px solid var(--line);background:var(--card);border-radius:999px;
+  padding:9px 15px;font-size:.66em;white-space:nowrap}
+#ai .inp{display:flex;gap:8px;padding:12px 18px calc(14px + var(--safe-b));border-top:1px solid var(--line);background:var(--card)}
+#ai .inp input{flex:1;font-size:.8em}
+#ai .inp button{background:var(--p1);color:#fff;border-radius:14px;padding:0 18px;font-size:.76em}
+#ai .note{font-size:.62em;color:var(--ink3);line-height:1.7;padding:8px 18px 0}
+#ai .spk{margin-top:8px;font-size:.6em;color:var(--ink3);border:1px solid var(--line);border-radius:999px;padding:5px 12px}
+
+/* ---------- 啟動畫面 ---------- */
+#boot{position:fixed;inset:0;z-index:120;background:#174238;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:16px;transition:opacity .5s}
+#boot img{width:132px;height:132px;border-radius:28px;box-shadow:0 12px 40px rgba(0,0,0,.35)}
+#boot b{font-family:var(--serif);color:#F2E3B8;font-size:1.05em;letter-spacing:.14em;font-weight:700}
+#boot small{color:rgba(242,227,184,.62);font-size:.6em;letter-spacing:.2em}
+#boot.off{opacity:0;pointer-events:none}
+
+hr.sep{border:0;border-top:1px solid var(--line);margin:26px 0}
+.hide{display:none!important}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+:focus-visible{outline:3px solid var(--p3);outline-offset:2px}
+</style>
+</head>
+<body>
+
+<div id="boot">
+  <img src="logo.png" alt="321系統神學" width="132" height="132">
+  <b>321系統神學</b>
+  <small>三部十九課　·　國度321空中團契</small>
+</div>
+
+<header class="top">
+  <div class="wrap">
+    <button class="iconbtn hide" id="back" aria-label="返回">‹</button>
+    <h1 id="ttl">321系統神學</h1>
+    <button class="iconbtn" id="speak" aria-label="朗讀">🔊</button>
+    <button class="iconbtn" id="fsz" aria-label="字級">Ａ</button>
+  </div>
+</header>
+
+<main class="wrap" id="view"></main>
+
+<nav class="tabs" id="tabs">
+  <button data-tab="today" class="on"><b>今</b>今日</button>
+  <button data-tab="courses"><b>課</b>課程</button>
+  <button data-tab="tools"><b>工</b>工具</button>
+  <button data-tab="me"><b>我</b>我的</button>
+</nav>
+
+<div id="selbar">
+  <button id="sbHL">畫線</button><button id="sbNote">畫線＋筆記</button>
+  <button id="sbSpeak">朗讀</button><button id="sbAsk">問小智</button>
+</div>
+
+<button id="aibtn" aria-label="AI 小智">智</button>
+<div id="ai"><div class="box">
+  <div class="hd"><b>小智</b><small id="aictx"></small>
+    <button class="iconbtn" id="aiclear" aria-label="清除">↺</button>
+    <button class="iconbtn" id="aiclose" aria-label="關閉">✕</button></div>
+  <div class="msgs" id="aimsgs"></div>
+  <div class="quick" id="aiquick"></div>
+  <p class="note">小智是陪讀的小幫手，不是聖靈，也不能代替牧者與屬靈同伴。</p>
+  <div class="inp"><input type="text" id="aiin" placeholder="問一個問題…" autocomplete="off">
+    <button id="aisend">送出</button></div>
+</div></div>
+
+<div class="sheet" id="sheet"><div class="inner"><div class="grab"></div><div id="sheetbody"></div></div></div>
+
+<div class="live" id="live">
+  <div class="lvbar"><i id="lvbar" style="width:0"></i></div>
+  <div class="lvbody" id="lvbody"></div>
+  <div class="lvfoot">
+    <span class="clock" id="lvclock">10:00</span>
+    <button class="btn" id="lvtoggle">暫停</button>
+    <button class="btn" id="lvnext" style="flex:1;text-align:center">下一段</button>
+    <button class="btn" id="lvexit">結束</button>
+  </div>
+</div>
+
+<script>
+'use strict';
+const $ = s => document.querySelector(s);
+const el = (h) => { const d = document.createElement('div'); d.innerHTML = h.trim(); return d.firstChild; };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ===== 設定 ===== */
+const CFG = {
+  aiEndpoint : 'https://xiaozhi-proxy.spch321.workers.dev',
+  aiModel    : 'claude-sonnet-4-6',
+  ttsEndpoint: 'https://azure-tts.spch321.workers.dev',
+  ttsVoices  : {
+    yunjhe  : { name:'zh-TW-YunJheNeural',                  label:'雲哲', desc:'溫潤親切男聲' },
+    yunfan  : { name:'zh-CN-Yunfan:DragonHDLatestNeural',   label:'雲帆', desc:'高清男聲' },
+    xiaochen: { name:'zh-CN-Xiaochen:DragonHDLatestNeural', label:'曉辰', desc:'高清女聲' }
+  }
+};
+
+/* ===== IndexedDB（語音快取與錄音） ===== */
+const IDB_NAME = 'g321theo';
+let _db = null;
+function db(){
+  if (_db) return Promise.resolve(_db);
+  return new Promise((res, rej) => {
+    if (!window.indexedDB) return rej(0);
+    const r = indexedDB.open(IDB_NAME, 1);
+    r.onupgradeneeded = () => { const d = r.result;
+      if (!d.objectStoreNames.contains('audio')) d.createObjectStore('audio');
+      if (!d.objectStoreNames.contains('rec'))   d.createObjectStore('rec'); };
+    r.onsuccess = () => { _db = r.result; res(_db); };
+    r.onerror = () => rej(0);
+  });
+}
+const idbGet = (st,k) => db().then(d => new Promise((res,rej) => {
+  const r = d.transaction(st,'readonly').objectStore(st).get(k);
+  r.onsuccess = () => res(r.result || null); r.onerror = () => rej(0); }));
+const idbPut = (st,k,v) => db().then(d => new Promise((res,rej) => {
+  const r = d.transaction(st,'readwrite').objectStore(st).put(v,k);
+  r.onsuccess = () => res(1); r.onerror = () => rej(0); }));
+const idbDel = (st,k) => db().then(d => new Promise(res => {
+  d.transaction(st,'readwrite').objectStore(st).delete(k); res(1); }));
+const idbKeys = st => db().then(d => new Promise(res => {
+  const r = d.transaction(st,'readonly').objectStore(st).getAllKeys();
+  r.onsuccess = () => res(r.result || []); r.onerror = () => res([]); }));
+
+/* ===== 儲存 ===== */
+const KEY = 'g321theo';
+const DEF = { settings:{ fs:1, depth:'core8', voice:'yunjhe', rate:1 },
+  progress:{}, notes:{}, marks:{}, last:null, memory:{} };
+let S = (() => { try { const o = Object.assign({}, DEF, JSON.parse(localStorage.getItem(KEY) || '{}'));
+    o.settings = Object.assign({}, DEF.settings, o.settings || {}); o.marks = o.marks || {}; return o; } catch(e){ return JSON.parse(JSON.stringify(DEF)); } })();
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} };
+const prog = id => (S.progress[id] = S.progress[id] || { steps:[], practice:'', review:'', who:'', whoAt:0, told:0, nudge:0 });
+const DAY = 864e5;
+
+/* ===== 金句間隔重複 ===== */
+const GAPS = [1, 3, 7, 16, 35, 90, 180];
+const mem = () => (S.memory && !Array.isArray(S.memory)) ? S.memory : (S.memory = {});
+const dueList = () => { const m = mem(), n = Date.now();
+  return IDX.lessons.filter(l => m[l.id] && m[l.id].due <= n).map(l => l.id); };
+function memAdd(id, silent){
+  const m = mem();
+  if (m[id]) return false;
+  m[id] = { box:0, due: Date.now(), hits:0 }; save();
+  if (!silent) toast('已加入複習');
+  return true;
+}
+function memGrade(id, ok){
+  const m = mem(), r = m[id]; if (!r) return;
+  r.box = ok ? Math.min(GAPS.length - 1, r.box + 1) : Math.max(0, r.box - 1);
+  r.hits = (r.hits||0) + (ok ? 1 : 0);
+  r.due = Date.now() + (ok ? GAPS[r.box] : 1) * DAY;
+  save();
+}
+// 遮字：依日期固定，同一天看到的空格一樣
+function blank(text, seed){
+  const chars = [...text];
+  const idx = chars.map((c,i) => /[\u4e00-\u9fa5]/.test(c) ? i : -1).filter(i => i >= 0);
+  let r = seed;
+  const rnd = () => (r = (r * 1103515245 + 12345) % 2147483648) / 2147483648;
+  const n = Math.max(1, Math.round(idx.length * .32));
+  const pick = new Set();
+  while (pick.size < n && pick.size < idx.length) pick.add(idx[Math.floor(rnd() * idx.length)]);
+  return chars.map((c,i) => pick.has(i) ? '<i>○</i>' : esc(c)).join('');
+}
+
+/* ===== 八大步驟 ===== */
+const STEPS = [
+  { k:'資訊', d:'讀完學員本' },
+  { k:'啟示', d:'讀經文並寫下所見' },
+  { k:'信服', d:'記住核心真理' },
+  { k:'實踐', d:'選一項本週操練' },
+  { k:'檢討', d:'一週後回填' },
+  { k:'修正', d:'調整或重讀' },
+  { k:'反覆', d:'複習三次' },
+  { k:'繁殖', d:'講給一個人聽' },
+];
+const NEEDS_INPUT = { 3:'practice', 4:'review', 7:'who' };
+
+/* ===== 資料 ===== */
+let IDX = null, LEX = null, VRS = null;
+const CACHE = {};
+const J = async p => (await fetch(p, { cache:'force-cache' })).json();
+async function boot(){
+  IDX = await J('data/index.json');
+  applyFS();
+  route('today');
+  setTimeout(() => { const b = $('#boot'); if (b){ b.classList.add('off');
+    setTimeout(() => b.remove(), 600); } }, 350);
+  J('data/lexicon.json').then(d => LEX = d);
+  J('data/verses.json').then(d => VRS = d);
+  // 背景預取
+  setTimeout(() => IDX.lessons.forEach((l,i) => setTimeout(() => getLesson(l.id), i*260)), 1500);
+}
+async function getLesson(id){ return CACHE[id] || (CACHE[id] = await J('data/lessons/' + id + '.json')); }
+const meta = id => IDX.lessons.find(l => l.id === id);
+const PC = p => ['', '#1E3A5F', '#1F4D3D', '#8B5E1A'][p];
+
+/* ===== 進度環 ===== */
+function ring(id, big){
+  const st = (S.progress[id] || {}).steps || [];
+  const done = st.length, C = big ? 50 : 18, R = big ? 9 : 5;
+  const c = 2 * Math.PI * (C - R/2 - 1), seg = c/8, gap = big ? 5 : 3;
+  let s = `<svg class="${big?'ringbig':'ring'}" viewBox="0 0 ${C*2} ${C*2}">`;
+  for (let i = 0; i < 8; i++){
+    const on = st.includes(i);
+    s += `<circle cx="${C}" cy="${C}" r="${C-R/2-1}" stroke="${on?'currentColor':'#E4DFD4'}"
+      stroke-dasharray="${seg-gap} ${c-seg+gap}" stroke-dashoffset="${-i*seg}"
+      transform="rotate(-90 ${C} ${C})" stroke-linecap="round"/>`;
+  }
+  if (big) s += `<text x="${C}" y="${C+6}" text-anchor="middle" font-size="26" font-family="serif" fill="currentColor">${done}/8</text>`;
+  return s + '</svg>';
+}
+
+/* ===== 路由 ===== */
+let CUR = { tab:'today', lesson:null, depth:null };
+function route(tab){
+  CUR.tab = tab; CUR.lesson = null; $('#sheet').classList.remove('on');
+  document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
+  $('#back').classList.add('hide');
+  document.documentElement.style.setProperty('--accent', 'var(--p1)');
+  window.scrollTo(0,0);
+  ({ today:vToday, courses:vCourses, tools:vTools, me:vMe })[tab]();
+}
+document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => route(b.dataset.tab));
+$('#back').onclick = () => route(CUR.tab);
+
+/* ===== 今日 ===== */
+function vToday(){
+  $('#ttl').textContent = '321系統神學';
+  const nextId = S.last || 'L01';
+  const m = meta(nextId), p = prog(nextId);
+  const step = p.steps.length < 8 ? STEPS[p.steps.length] : null;
+  const done = IDX.lessons.filter(l => prog(l.id).steps.length === 8).length;
+  const started = IDX.lessons.filter(l => prog(l.id).steps.length > 0).length;
+
+  let h = `<div class="sect">
+    <p class="eyebrow">今日</p>
+    <h2 class="big">認識神，好叫我更愛祂、更像祂。</h2>
+    <button class="bigbtn" onclick="openLesson('${nextId}')">
+      <small>${S.last ? '接著讀' : '從第一課開始'}</small>
+      <b>第${m.number}課　${esc(m.title)}</b>
+      <small style="margin:10px 0 0">${step ? '下一步 · ' + (p.steps.length+1) + ' ' + step.k + '｜' + step.d : '八步已走完　願你繼續繁殖'}</small>
+    </button>
+  </div>`;
+
+  const dl = dueList();
+  if (dl.length) h += `<div class="card" style="border-color:var(--p3)">
+    <p class="eyebrow" style="color:var(--p3)">第七步 · 反覆</p>
+    <p style="margin:0">有 <b>${dl.length}</b> 句在等你。每一句大約十五秒。</p>
+    <div class="btnrow"><button class="btn pri" onclick="startReview()">開始複習</button></div></div>`;
+
+  const tv = m.memoryVerse;
+  h += `<div class="card"><p class="eyebrow">今日金句</p>
+    <p style="font-family:var(--serif);font-size:1.05em;line-height:1.75;margin:0">${esc(tv ? tv.text : (m.oneLineTruth||''))}</p>
+    <p class="muted" style="margin:10px 0 0">${esc(tv ? tv.ref + '　·　第' + m.number + '課' : '第' + m.number + '課')}</p></div>`;
+
+  const due = IDX.lessons.filter(l => { const q = S.progress[l.id];
+    return q && q.who && !q.told && q.whoAt && Date.now() - q.whoAt > 7*DAY; });
+  if (due.length){
+    const d = due[0], q = prog(d.id);
+    h += `<div class="card" style="border-color:var(--p3)">
+      <p class="eyebrow" style="color:var(--p3)">第八步 · 繁殖</p>
+      <p style="margin:0 0 4px">你在第${d.number}課寫下要講給 <b>${esc(q.who)}</b> 聽。</p>
+      <p style="margin:0">講了嗎？</p>
+      <div class="btnrow">
+        <button class="btn pri" onclick="told('${d.id}',1)">講了</button>
+        <button class="btn" onclick="told('${d.id}',0)">還沒</button></div>`;
+    if (q.nudge >= 3) h += `<p class="muted" style="margin-top:14px;padding-top:12px;border-top:1px solid var(--line)">
+      不急。第十五課說過——耶15:16 為「享受」保留了位置。<br>
+      先讓自己被餵飽，滿出來的自然會流給別人。</p>`;
+    h += '</div>';
+  }
+
+  h += `<div class="card"><p class="eyebrow">走到哪裡了</p>
+    <p style="margin:0 0 6px">十九課中，你開始了 <b>${started}</b> 課，八步走完 <b>${done}</b> 課。</p>
+    <p class="muted">這裡不算連續天數。神看的是方向，不是紀錄。</p></div>`;
+
+  h += `<p class="muted" style="text-align:center;padding:10px 0 30px">
+    讀完只是第一步。<br>能講給別人聽，才叫完成。</p>`;
+  $('#view').innerHTML = h;
+}
+
+function told(id, yes){
+  const p = prog(id);
+  if (yes){ p.told = 1; save(); vToday(); return toast('願主使用你所說的每一句話'); }
+  p.nudge = (p.nudge||0) + 1; p.whoAt = Date.now(); save(); vToday();
+}
+
+/* ===== 課程 ===== */
+function vCourses(){
+  $('#ttl').textContent = '課程';
+  let h = `<div class="sect"><p class="eyebrow">三部 · 十九課</p>
+    <h2 class="big">把神的話拼成一幅圖</h2></div>`;
+  [1,2,3].forEach(p => {
+    const P = IDX.parts[p];
+    h += `<div class="partbar" style="border-color:${PC(p)}">
+      <b style="color:${PC(p)}">第${['','一','二','三'][p]}部　${P.name}</b><span>${P.sub}</span></div>`;
+    IDX.lessons.filter(l => l.part === p).forEach(l => {
+      h += `<button class="row" style="color:${PC(p)}" onclick="openLesson('${l.id}')">
+        <span class="num">${l.number}</span>
+        <span class="t"><b style="color:var(--ink)">${esc(l.title)}</b>
+          <span>${esc(l.coreQuestion || '')}</span></span>
+        ${ring(l.id)}</button>`;
+    });
+  });
+  $('#view').innerHTML = h + '<div style="height:20px"></div>';
+}
+
+/* ===== 課程頁 ===== */
+const DEPTHS = [
+  ['card',  '繁殖卡', '三句話、一節經文、一個問題。講給一個人聽。'],
+  ['core8', '學員本', '八個小節，約五分鐘。個人靈修用這一本。'],
+  ['live4', '小組本', '九十分鐘的帶領流程。組長用這一本。'],
+  ['full',  '教師本', '完整教材，篇幅長。備課與講台預備用。'],
+];
+async function openLesson(id, depth){
+  const L = await getLesson(id), m = meta(id);
+  CUR.lesson = id; CUR.depth = depth || S.settings.depth || 'core8';
+  $('#sheet').classList.remove('on');
+  S.last = id; save();
+  document.documentElement.style.setProperty('--accent', PC(L.part));
+  $('#ttl').textContent = '第' + m.number + '課';
+  $('#back').classList.remove('hide');
+  window.scrollTo(0,0);
+  renderLesson(L);
+}
+function renderLesson(L){
+  const p = prog(L.id);
+  let h = `<div class="sect">
+    <p class="eyebrow">第${['','一','二','三'][L.part]}部 · ${L.partName} · 第${L.number}課
+      <span class="pill ${L.level==='A'?'A':'B'}" style="margin-left:8px">${L.level}級</span></p>
+    <h2 class="big">${esc(L.title)}</h2>
+    <p style="font-family:var(--serif);font-size:1.02em;line-height:1.75;color:var(--ink2);margin:0">
+      ${esc(L.oneLineTruth||'')}</p>
+  </div>`;
+
+  h += '<div class="depth">' + DEPTHS.map(d =>
+    `<button class="${CUR.depth===d[0]?'on':''}" onclick="setDepth('${d[0]}')">${d[1]}</button>`).join('') + '</div>';
+  h += `<p class="depthnote">${DEPTHS.find(d=>d[0]===CUR.depth)[2]}</p>`;
+
+  if (CUR.depth === 'live4'){
+    h += `<button class="bigbtn" style="margin-bottom:16px" onclick="startLive('${L.id}')">
+      <small>小組現場模式</small><b>開始九十分鐘</b>
+      <small style="margin:8px 0 0">大字、計時、一題一頁、帶領提醒自動出現</small></button>`;
+  }
+
+  h += '<div class="body" id="lbody">';
+  if (CUR.depth === 'full'){
+    h += L.views.full.map(b => `<details class="blk"><summary>
+      <span class="bn">${b.n}</span><span class="bh">${esc(b.heading.replace(/\*\*/g,''))}</span>
+      <span class="ar">＋</span></summary><div class="inner">${b.html}</div></details>`).join('');
+  } else if (CUR.depth === 'card') {
+    h += cardHTML(L) + `<div class="btnrow" style="margin:0 0 6px">
+      <button class="btn pri" onclick="makeImage('${L.id}')">做成圖卡，傳給一個人</button></div>`;
+  } else {
+    h += L.views[CUR.depth] || '<p class="muted">本課此版本尚未提供。</p>';
+  }
+  h += '</div>';
+
+  // 固定結尾語（強制）
+  if (L.parts.closing) h += `<div class="card" style="background:#F2EFE7;border-style:dashed">
+    <p class="eyebrow">本課的限度 · 不得略過</p><div class="body">${L.parts.closing}</div></div>`;
+
+  // 八大步驟
+  h += `<hr class="sep"><div class="sect"><p class="eyebrow">八大步驟 · 學習引擎</p>
+    <h2 class="big" style="text-align:center">${ring(L.id,1)}</h2>
+    <p class="muted" style="text-align:center;margin:-6px 0 4px">
+      改變觀念的八個步驟。讀完全文，只點亮第一格。</p>
+    <div class="steps">` +
+    STEPS.map((s,i) => `<button class="step ${p.steps.includes(i)?'done':''}" onclick="toggleStep('${L.id}',${i})">
+      <b>${i+1}</b><span>${s.k}</span></button>`).join('') + `</div>
+    <p class="muted" style="margin-top:10px">第 4、5、8 步需要實際填寫，不能只勾選。</p></div>`;
+
+  // 我畫的線
+  const ms = S.marks[L.id] || [];
+  h += `<div class="card"><p class="eyebrow">我畫的線 · ${ms.length}</p>`;
+  h += ms.length
+    ? ms.map((m,i) => `<p style="margin:0 0 12px;font-size:.82em;line-height:1.75;cursor:pointer" onclick="markMenu(${i})">
+        <span style="background:linear-gradient(transparent 58%,rgba(201,162,39,.42) 58%)">${esc(m.q.slice(0,70))}${m.q.length>70?'…':''}</span>
+        ${m.note ? `<br><span class="muted">✎ ${esc(m.note)}</span>` : ''}</p>`).join('')
+    : '<p class="muted" style="margin:0">在課文上選取一段文字，就會跳出「畫線」。畫過的線會留在這裡。</p>';
+  h += '</div>';
+
+  // 錄音
+  h += `<div class="card"><p class="eyebrow">語音筆記</p>
+    ${REC && REC.id === L.id
+      ? `<div class="rec"><span class="recdot"></span><span class="rt" id="recclock">0 秒</span>
+          <button class="btn pri" onclick="recStop()">停止並存檔</button></div>`
+      : `<div class="btnrow" style="margin:0 0 10px"><button class="btn pri" onclick="recStart('${L.id}')">開始錄音</button></div>`}
+    <div id="reclist"></div>
+    <p class="muted" style="margin:6px 0 0">講道、小組分享、或自己講一次給自己聽。錄音只存在這台手機。</p></div>`;
+
+  // 筆記
+  h += `<div class="card"><p class="eyebrow">我的筆記</p>
+    <textarea id="note" rows="4" placeholder="這一課，我要改的一件事是……">${esc(S.notes[L.id]||'')}</textarea>
+    <div class="btnrow"><button class="btn pri" onclick="saveNote('${L.id}')">存起來</button>
+      <button class="btn" onclick="askAI('這一課的重點是什麼？')">問小智</button></div></div>`;
+
+  // 相鄰課
+  const i = IDX.lessons.findIndex(x => x.id === L.id);
+  h += '<div class="btnrow" style="margin:18px 0 30px">';
+  if (i > 0) h += `<button class="btn" onclick="openLesson('${IDX.lessons[i-1].id}')">‹ 第${IDX.lessons[i-1].number}課</button>`;
+  if (i < IDX.lessons.length-1) h += `<button class="btn" style="margin-left:auto" onclick="openLesson('${IDX.lessons[i+1].id}')">第${IDX.lessons[i+1].number}課 ›</button>`;
+  h += '</div>';
+
+  $('#view').innerHTML = h;
+  bindBody();
+  applyMarks();
+  recList(L.id);
+}
+function setDepth(d){
+  CUR.depth = d; S.settings.depth = d; save();
+  const L = CACHE[CUR.lesson];
+  if (!L) return getLesson(CUR.lesson).then(x => { renderLesson(x); window.scrollTo(0,0); });
+  renderLesson(L); window.scrollTo(0,0);
+}
+function saveNote(id){ S.notes[id] = $('#note').value; save(); toast('筆記已存'); }
+
+/* ===== 步驟 ===== */
+function toggleStep(id, i){
+  const p = prog(id);
+  if (p.steps.includes(i)){ p.steps = p.steps.filter(x => x !== i); save(); return renderLesson(CACHE[id]); }
+  const need = NEEDS_INPUT[i];
+  if (need){
+    const q = { practice:'第4步 實踐｜你這週要做的一件事是什麼？',
+                review:'第5步 檢討｜這週做到了嗎？卡在哪裡？',
+                who:'第8步 繁殖｜你要講給誰聽？寫下名字。' }[need];
+    const v = prompt(q, p[need] || '');
+    if (!v || !v.trim()) return;
+    p[need] = v.trim();
+    if (need === 'who'){ p.whoAt = Date.now(); p.told = 0; p.nudge = 0; }
+  }
+  p.steps = [...new Set([...p.steps, i])].sort((a,b)=>a-b);
+  if (i === 2 && meta(id).memoryVerse) memAdd(id, true);
+  save(); renderLesson(CACHE[id]);
+  if (p.steps.length === 8) setTimeout(() => alert('八步走完了。\n\n你不只讀完，你把它傳了下去。\n願一切榮耀歸給神。'), 250);
+}
+
+/* ===== 金句頁 ===== */
+let RV = null;
+function vMemory(){
+  $('#ttl').textContent = '金句記憶'; $('#back').classList.remove('hide'); window.scrollTo(0,0);
+  const m = mem(), due = dueList(), enrolled = IDX.lessons.filter(l => m[l.id]);
+  let h = `<div class="sect"><p class="eyebrow">八大步驟 · 第七步 反覆</p>
+    <h2 class="big">金句記憶</h2>
+    <p class="muted">記住的間隔會愈拉愈長：1、3、7、16、35、90、180 天。
+      記不起來也沒關係，明天再見一次就好。</p></div>`;
+  if (due.length) h += `<button class="bigbtn" onclick="startReview()">
+    <small>現在可以複習</small><b>有 ${due.length} 句在等你</b>
+    <small style="margin:8px 0 0">每一句大約十五秒</small></button><div style="height:14px"></div>`;
+  else if (enrolled.length) h += `<div class="card"><p style="margin:0">今天沒有到期的金句。</p>
+    <p class="muted" style="margin:8px 0 0">下一句在
+      ${Math.max(1, Math.ceil((Math.min(...enrolled.map(l=>m[l.id].due)) - Date.now())/DAY))} 天後。</p></div>`;
+
+  h += `<div class="partbar"><b>十九課金句</b><span>${enrolled.length} / ${IDX.lessons.length} 已加入</span></div>`;
+  IDX.lessons.forEach(l => {
+    if (!l.memoryVerse) return;
+    const r = m[l.id];
+    h += `<div class="row" style="align-items:flex-start">
+      <span class="num">${l.number}</span>
+      <span class="t"><b style="font-family:var(--serif);font-weight:600">${esc(l.memoryVerse.text)}</b>
+        <span style="white-space:normal">${esc(l.memoryVerse.ref)}${r ? '　·　第 ' + (r.box+1) + ' 階' : ''}</span></span>
+      ${r ? '<span class="pill A" style="flex:none">已加入</span>'
+          : `<button class="pill" style="flex:none;padding:8px 12px" onclick="memAdd('${l.id}');vMemory()">加入</button>`}</div>`;
+  });
+  $('#view').innerHTML = h + '<div style="height:24px"></div>';
+}
+function startReview(){
+  const q = dueList();
+  if (!q.length) return vMemory();
+  RV = { q, i:0, shown:false };
+  drawReview();
+}
+function drawReview(){
+  if (RV.i >= RV.q.length){
+    $('#view').innerHTML = `<div class="sect"><p class="eyebrow">複習完成</p>
+      <h2 class="big">今天的都看過了。</h2>
+      <p class="muted">神的話不是靠記憶力保存的，是靠祂保守的。
+        你今天做的，只是把心再擺回祂的話面前一次。</p>
+      <div class="btnrow"><button class="btn pri" onclick="vMemory()">回到金句</button>
+        <button class="btn" onclick="route('today')">回今日</button></div></div>`;
+    RV = null; return;
+  }
+  const id = RV.q[RV.i], l = meta(id), v = l.memoryVerse;
+  const seed = Math.floor(Date.now()/DAY) + l.number;
+  $('#ttl').textContent = '複習　' + (RV.i+1) + ' / ' + RV.q.length;
+  document.documentElement.style.setProperty('--accent', PC(l.part));
+  $('#view').innerHTML = `<div class="sect">
+    <div class="mv"><p class="mref">${esc(v.ref)}</p>
+      <p class="mtext">${RV.shown ? esc(v.text) : blank(v.text, seed)}</p>
+      <p class="mprog">第 ${l.number} 課　·　第 ${(mem()[id].box)+1} 階</p></div>
+    ${RV.shown ? `<div class="btnrow">
+        <button class="btn" style="flex:1;text-align:center" onclick="grade('${id}',0)">還沒記住</button>
+        <button class="btn pri" style="flex:1;text-align:center" onclick="grade('${id}',1)">記得了</button></div>`
+      : `<button class="bigbtn" onclick="RV.shown=true;drawReview()"><b style="text-align:center;display:block">看答案</b></button>`}
+    <p class="muted" style="text-align:center;margin-top:18px">
+      <button class="btn" onclick="openLesson('${id}')">回到第${l.number}課</button></p>
+  </div>`;
+}
+function grade(id, ok){ memGrade(id, ok); RV.i++; RV.shown = false; drawReview(); }
+
+/* ===== 工具 ===== */
+function vTools(){
+  $('#ttl').textContent = '工具';
+  $('#view').innerHTML = `<div class="sect"><p class="eyebrow">隨手可查</p>
+    <h2 class="big">工具</h2></div>
+    <div class="card"><input type="text" id="q" placeholder="搜尋課程、原文、經文…" autocomplete="off">
+      <div id="qr"></div></div>
+    <button class="row" onclick="vLexicon()"><span class="num">原</span>
+      <span class="t"><b>原文字彙庫</b><span>${LEX?Object.keys(LEX).length:'—'} 個希伯來文與希臘文字，跨課相連</span></span></button>
+    <button class="row" onclick="vVerses()"><span class="num">經</span>
+      <span class="t"><b>經文索引</b><span>${VRS?Object.keys(VRS).length:'—'} 處引用，可從經文反查課程</span></span></button>
+    <button class="row" onclick="vMemory()"><span class="num">句</span>
+      <span class="t"><b>金句記憶</b><span>十九課金句，間隔重複，記住的愈拉愈長</span></span></button>
+    <button class="row" onclick="vDiag()"><span class="num">診</span>
+      <span class="t"><b>有己四型</b><span>驕傲、恐懼、羞恥、受傷——看自己，不歸類別人</span></span></button>
+    <button class="row" onclick="vRevisions()"><span class="num">修</span>
+      <span class="t"><b>321修正檔案庫</b><span>321被聖經修正的每一處，公開陳列</span></span></button>
+    <div style="height:24px"></div>`;
+  $('#q').oninput = e => search(e.target.value.trim());
+}
+function search(q){
+  const r = $('#qr');
+  if (q.length < 1){ r.innerHTML = ''; return; }
+  let h = '', n = 0;
+  IDX.lessons.forEach(l => {
+    if (n > 14) return;
+    if ((l.title + l.coreQuestion + l.oneLineTruth).includes(q)){
+      n++; h += `<button class="row" style="margin-top:10px" onclick="openLesson('${l.id}')">
+        <span class="num">${l.number}</span><span class="t"><b>${esc(l.title)}</b><span>課程</span></span></button>`;
+    }
+  });
+  if (LEX) Object.values(LEX).forEach(x => {
+    if (n > 20) return;
+    if ((x.code + x.original + x.translit + (x.gloss||'') + x.label).toLowerCase().includes(q.toLowerCase())){
+      n++; h += `<button class="row" style="margin-top:10px" onclick="showLex('${x.code}')">
+        <span class="num" style="font-size:.8em">${x.code}</span>
+        <span class="t"><b>${esc(x.original||x.code)}</b><span>原文 · ${esc(x.translit||'')}</span></span></button>`;
+    }
+  });
+  if (VRS && /\d/.test(q)) Object.keys(VRS).forEach(k => {
+    if (n > 26) return;
+    if (k.startsWith(q)){ n++; h += `<button class="row" style="margin-top:10px" onclick="showVerse('${k}')">
+      <span class="num" style="font-size:.7em">經</span>
+      <span class="t"><b>${k}</b><span>出現於 ${VRS[k].length} 課</span></span></button>`; }
+  });
+  r.innerHTML = h || '<p class="muted" style="margin-top:12px">沒有找到。換個詞試試，或用經文格式如「羅12:2」。</p>';
+}
+function vLexicon(){
+  if (!LEX) return toast('字彙庫還在載入，請稍候');
+  $('#ttl').textContent = '原文字彙庫'; $('#back').classList.remove('hide'); window.scrollTo(0,0);
+  const ks = Object.keys(LEX).sort((a,b) => a[0] === b[0] ? (+a.slice(1)) - (+b.slice(1)) : a[0] < b[0] ? -1 : 1);
+  let h = `<div class="sect"><p class="eyebrow">${ks.length} 個字</p><h2 class="big">原文字彙庫</h2>
+    <p class="muted">同一個字在不同課出現時互相連結。點進去，看它在別課說了什麼。</p></div>`;
+  ['H','G'].forEach(g => {
+    h += `<div class="partbar"><b>${g === 'H' ? '希伯來文' : '希臘文'}</b><span>${ks.filter(k=>k[0]===g).length} 個</span></div>`;
+    ks.filter(k => k[0] === g).forEach(k => {
+      const x = LEX[k];
+      h += `<button class="row" onclick="showLex('${k}')">
+        <span class="num" style="font-size:.62em;letter-spacing:.04em">${k}</span>
+        <span class="t"><b style="font-size:1.05em">${esc(x.original||x.gloss||k)}</b>
+          <span>${esc(x.translit || (x.original ? '' : '課文中提及'))}${x.translit||!x.original?'　·　':''}第 ${x.lessons.map(i=>meta(i).number).join('、')} 課</span></span></button>`;
+    });
+  });
+  $('#view').innerHTML = h + '<div style="height:24px"></div>';
+}
+function vVerses(){
+  if (!VRS) return toast('經文索引還在載入，請稍候');
+  $('#ttl').textContent = '經文索引'; $('#back').classList.remove('hide'); window.scrollTo(0,0);
+  const ks = Object.keys(VRS).sort((a,b) => VRS[b].length - VRS[a].length);
+  let h = `<div class="sect"><p class="eyebrow">${ks.length} 處引用</p><h2 class="big">經文索引</h2>
+    <p class="muted">從經文反查：這節經文，哪幾課處理過。以下依被引用次數排序。</p></div>`;
+  ks.slice(0,150).forEach(k => {
+    h += `<button class="row" onclick="showVerse('${k}')"><span class="num" style="font-size:.62em">${VRS[k].length}課</span>
+      <span class="t"><b>${k}</b><span>第 ${VRS[k].map(i=>meta(i).number).join('、')} 課</span></span></button>`;
+  });
+  $('#view').innerHTML = h + '<p class="muted" style="padding:14px 0 30px">只列出前 150 處。其餘請用工具頁的搜尋。</p>';
+}
+function vDiag(){
+  $('#ttl').textContent = '有己四型'; $('#back').classList.remove('hide'); window.scrollTo(0,0);
+  $('#view').innerHTML = `<div class="sect"><p class="eyebrow">生命診斷</p>
+    <h2 class="big">有己四型分辨</h2>
+    <p class="muted">同一個人可能同時是驕傲的又是羞恥的。這是照自己的鏡子，不是歸類別人的標籤。
+      對人說「你就是驕傲型」，本身就是一種有己。</p></div>
+    <div class="card"><p class="eyebrow">選一課，看它照出什麼</p>
+    ${IDX.lessons.map(l => `<button class="row" onclick="openDiag('${l.id}')">
+      <span class="num">${l.number}</span><span class="t"><b>${esc(l.title)}</b></span></button>`).join('')}</div>
+    <div style="height:24px"></div>`;
+}
+async function openDiag(id){
+  const L = await getLesson(id);
+  sheet(`<p class="eyebrow">第${L.number}課 · 有己四型</p>
+    <h2 class="big">${esc(L.title)}</h2><div class="body">${L.parts.diagnosis || '<p class="muted">本課未提供。</p>'}</div>`);
+}
+function vRevisions(){
+  $('#ttl').textContent = '321修正檔案庫'; $('#back').classList.remove('hide'); window.scrollTo(0,0);
+  $('#view').innerHTML = `<div class="sect"><p class="eyebrow">公開陳列</p>
+    <h2 class="big">321 被聖經修正的地方</h2>
+    <p class="muted">一套理念若不敢列出自己需要被修正的地方，它就已經取代了聖經的位置。
+      這裡收錄每一課對 321 提出的修正、限定與深化。</p></div>
+    ${IDX.lessons.map(l => `<button class="row" onclick="openRev('${l.id}')">
+      <span class="num">${l.number}</span><span class="t"><b>${esc(l.title)}</b>
+      <span>三項修正</span></span></button>`).join('')}<div style="height:24px"></div>`;
+}
+async function openRev(id){
+  const L = await getLesson(id);
+  sheet(`<p class="eyebrow">第${L.number}課 · 修正321</p>
+    <h2 class="big">${esc(L.title)}</h2><div class="body">${L.parts.revisions || '<p class="muted">本課未提供。</p>'}</div>`);
+}
+
+/* ===== 我的 ===== */
+function vMe(){
+  $('#ttl').textContent = '我的';
+  const notes = Object.keys(S.notes).filter(k => (S.notes[k]||'').trim());
+  const who = IDX.lessons.filter(l => prog(l.id).who);
+  $('#view').innerHTML = `<div class="sect"><p class="eyebrow">設定與紀錄</p><h2 class="big">我的</h2></div>
+    <div class="card"><p class="eyebrow">字級</p>
+      <div class="btnrow">${['標準','大','特大','超大'].map((n,i)=>
+        `<button class="btn ${S.settings.fs===i?'pri':''}" onclick="setFS(${i})">${n}</button>`).join('')}</div>
+      <p class="muted" style="margin-top:10px">預設為「大」。長輩使用建議「特大」以上。</p></div>
+
+    <div class="card"><p class="eyebrow">真人語音</p>
+      ${rvOn() ? `<div class="btnrow">${Object.keys(CFG.ttsVoices).map(k =>
+          `<button class="btn ${S.settings.voice===k?'pri':''}" onclick="setVoice('${k}')">${CFG.ttsVoices[k].label}</button>`).join('')}</div>
+        <p class="muted" style="margin:10px 0 0">${esc(CFG.ttsVoices[S.settings.voice].desc)}</p>
+        <p class="eyebrow" style="margin-top:18px">語速</p>
+        <div class="btnrow">${[0.8,0.9,1,1.15,1.3].map(r =>
+          `<button class="btn ${S.settings.rate===r?'pri':''}" onclick="setRate(${r})">${r===1?'正常':(r<1?'慢 ':'快 ')+r}</button>`).join('')}</div>
+        <div class="btnrow" style="margin-top:14px"><button class="btn" onclick="clearVoiceCache()">清除語音快取</button></div>
+        <p class="muted" style="margin-top:10px">唸過的段落會存在手機裡，再聽一次不需要網路，也不會再向伺服器要一次。</p>`
+      : '<p class="muted" style="margin:0">目前使用手機內建的語音朗讀。</p>'}</div>
+
+    <div class="card"><p class="eyebrow">金句記憶</p>
+      ${(() => { const m = mem(), en = IDX.lessons.filter(l => m[l.id]), d = dueList();
+        return en.length ? `<p style="margin:0">已加入 <b>${en.length}</b> 句，今天到期 <b>${d.length}</b> 句。</p>
+          <div class="btnrow"><button class="btn pri" onclick="vMemory()">前往複習</button></div>`
+        : `<p class="muted" style="margin:0">還沒有加入金句。走到第三步「信服」時會自動加入，也可以到工具頁手動挑選。</p>`; })()}</div>
+
+    <div class="card"><p class="eyebrow">我要講給誰聽</p>
+      ${who.length ? who.map(l => `<p style="margin:0 0 8px;font-size:.86em">
+        第${l.number}課 → <b>${esc(prog(l.id).who)}</b></p>`).join('')
+        : '<p class="muted">還沒有記錄。走到第八步時，App 會問你這個問題。</p>'}
+      <p class="muted" style="margin-top:10px">這些名字只存在你的手機裡，永遠不會上傳。</p></div>
+
+    <div class="card"><p class="eyebrow">我的筆記 · ${notes.length} 則</p>
+      ${notes.length ? notes.map(k => `<p style="margin:0 0 10px;font-size:.84em">
+        <b style="color:var(--p1)">第${meta(k).number}課</b>　${esc(S.notes[k]).slice(0,60)}</p>`).join('')
+        : '<p class="muted">還沒有筆記。</p>'}</div>
+
+    <div class="card"><p class="eyebrow">備份</p>
+      <p class="muted">所有資料只存在這台裝置。換手機前請先匯出。</p>
+      <div class="btnrow">
+        <button class="btn pri" onclick="exportData()">匯出備份</button>
+        <button class="btn" onclick="$('#imp').click()">匯入備份</button>
+      </div><input type="file" id="imp" accept=".json" style="display:none"></div>
+
+    <div class="card"><p class="eyebrow">關於</p>
+      <div style="display:flex;gap:16px;align-items:center;margin:0 0 14px">
+        <img src="logo.png" alt="" width="64" height="64" style="width:64px;height:64px;border-radius:16px;flex:none">
+        <div><p style="margin:0;font-family:var(--serif);font-size:.95em;font-weight:700">321系統神學</p>
+          <p class="muted" style="margin:2px 0 0">v1.4.0</p></div></div>
+      <p style="margin:0 0 8px;font-size:.86em" class="hide">《321系統神學》</p>
+      <p class="muted">國度321空中團契　·　貴格會新埔教會<br>
+      三部十九課　·　完全離線可用　·　永久免費</p>
+      <p class="muted" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--line)">
+      本教材本身，也應接受聖經的檢驗。<br>
+      若有一天你在聖經裡看見與本文不同的亮光，<b>請跟隨聖經，不要跟隨我們。</b></p></div>
+    <div style="height:24px"></div>`;
+  $('#imp').onchange = e => {
+    const f = e.target.files[0]; if (!f) return;
+    const r = new FileReader();
+    r.onload = () => { try { S = Object.assign({}, DEF, JSON.parse(r.result)); save(); applyFS(); vMe(); toast('已匯入'); }
+      catch(err){ alert('這個檔案讀不出來。請選擇本 App 匯出的備份檔。'); } };
+    r.readAsText(f);
+  };
+}
+function setVoice(k){ S.settings.voice = k; save(); rv.url = {}; vMe(); toast('已換成' + CFG.ttsVoices[k].label); }
+function setRate(r){ S.settings.rate = r; save(); rv.url = {}; vMe(); }
+async function clearVoiceCache(){
+  try { const ks = await idbKeys('audio'); for (const k of ks) await idbDel('audio', k); } catch(e){}
+  rv.url = {}; toast('語音快取已清除');
+}
+function exportData(){
+  const b = new Blob([JSON.stringify(S,null,1)], { type:'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(b);
+  a.download = '321系統神學備份_' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+}
+
+/* ===== 字級 ===== */
+const FSV = ['20px','24px','28px','32px'];
+function applyFS(){ document.documentElement.style.setProperty('--fs', FSV[S.settings.fs] || FSV[1]); }
+function setFS(i){ S.settings.fs = i; save(); applyFS(); vMe(); }
+$('#fsz').onclick = () => { S.settings.fs = (S.settings.fs + 1) % 4; save(); applyFS(); toast('字級：' + ['標準','大','特大','超大'][S.settings.fs]); };
+
+/* ===== 彈出層 ===== */
+function sheet(html){ $('#sheetbody').innerHTML = html; $('#sheet').classList.add('on'); bindBody($('#sheetbody')); }
+$('#sheet').onclick = e => { if (e.target.id === 'sheet') $('#sheet').classList.remove('on'); };
+function showLex(code){
+  const x = LEX && LEX[code]; if (!x) return toast('字彙庫還在載入，請稍候');
+  sheet(`<p class="lxcode">${code}</p><p class="lxword">${esc(x.original||x.gloss||code)}</p>
+    <p class="muted" style="font-size:.82em">${esc(x.translit || (x.original ? '' : '本字在課文中以中文釋義出現'))}</p>
+    <p style="font-size:.9em;line-height:1.7;margin:14px 0">${esc(x.label||'')}</p>
+    <p class="eyebrow" style="margin-top:20px">出現於這幾課</p>
+    ${x.lessons.map(i => `<button class="row" onclick="$('#sheet').classList.remove('on');openLesson('${i}')">
+      <span class="num">${meta(i).number}</span><span class="t"><b>${esc(meta(i).title)}</b></span></button>`).join('')}`);
+}
+function showVerse(ref){
+  if (!VRS) return toast('經文索引還在載入，請稍候');
+  const ls = VRS[ref] || [];
+  sheet(`<p class="eyebrow">經文反查</p><h2 class="big">${ref}</h2>
+    <p class="muted">這節經文在以下課程中被處理。</p>
+    ${ls.map(i => `<button class="row" onclick="$('#sheet').classList.remove('on');openLesson('${i}')">
+      <span class="num">${meta(i).number}</span><span class="t"><b>${esc(meta(i).title)}</b></span></button>`).join('')}`);
+}
+function bindBody(root){
+  (root || $('#view')).querySelectorAll('a.lx').forEach(a => a.onclick = () => showLex(a.dataset.code));
+  (root || $('#view')).querySelectorAll('a.vs').forEach(a => a.onclick = () => showVerse(a.dataset.ref));
+}
+
+/* ===== 朗讀：真人語音（Azure）＋ 系統語音備援 ===== */
+const SILENT = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA=';
+const rv = { audio:null, url:{}, unlocked:false, queue:[], token:0, active:false, onDone:null };
+const rvOn = () => /^https?:\/\//i.test(CFG.ttsEndpoint || '');
+function rvAudio(){
+  if (!rv.audio){
+    rv.audio = new Audio(); rv.audio.preload = 'auto';
+    try { rv.audio.playsInline = true; rv.audio.setAttribute('playsinline',''); 
+          rv.audio.setAttribute('webkit-playsinline',''); } catch(e){}
+  }
+  return rv.audio;
+}
+// iOS 必須在使用者手勢中先播一段無聲，之後才准許程式播放
+function rvUnlock(){
+  if (rv.unlocked) return;
+  try { const a = rvAudio(); a.loop = false; a.src = SILENT;
+    const p = a.play();
+    if (p && p.then) p.then(() => { rv.unlocked = true; try { a.pause(); } catch(e){} }).catch(()=>{});
+    else rv.unlocked = true;
+  } catch(e){}
+}
+const rvVoice = () => (CFG.ttsVoices[S.settings.voice] || CFG.ttsVoices.yunjhe).name;
+const rvRate  = () => { const pct = Math.round(((S.settings.rate || 1) - 1) * 100);
+                        return (pct >= 0 ? '+' : '') + pct + '%'; };
+// 依標點切句，每段 100–300 字：唸起來自然，請求也不會太碎
+function rvChunks(text){
+  const t = String(text||'').replace(/\s+/g,' ').trim(); if (!t) return [];
+  const end = '。！？；\n'; const out = []; let buf = '';
+  for (const ch of t){ buf += ch; if (end.includes(ch) && buf.length >= 100){ out.push(buf); buf = ''; } }
+  if (buf.trim()) out.push(buf);
+  const fin = [];
+  out.forEach(seg => { while (seg.length > 300){ fin.push(seg.slice(0,300)); seg = seg.slice(300); }
+                       if (seg) fin.push(seg); });
+  return fin.length ? fin : [t];
+}
+async function rvPiece(piece){
+  const key = rvVoice() + '|' + rvRate() + '|' + piece;
+  if (rv.url[key]) return rv.url[key];
+  try { const b = await idbGet('audio', key);
+    if (b){ const u = URL.createObjectURL(b); rv.url[key] = u; return u; } } catch(e){}
+  const res = await fetch(CFG.ttsEndpoint, { method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ voice: rvVoice(), rate: rvRate(), sil:140, silc:140, sile:260, text: piece }) });
+  if (!res.ok) throw new Error('TTS ' + res.status);
+  const blob = await res.blob();
+  try { idbPut('audio', key, blob); } catch(e){}
+  const u = URL.createObjectURL(blob); rv.url[key] = u; return u;
+}
+function rvStop(){
+  rv.token++; rv.active = false; rv.queue = [];
+  if (rv.audio){ try { rv.audio.pause(); } catch(e){} rv.audio.onended = null; rv.audio.onerror = null; }
+  try { if (window.speechSynthesis) speechSynthesis.cancel(); } catch(e){}
+  try { if (navigator.mediaSession) navigator.mediaSession.playbackState = 'none'; } catch(e){}
+}
+// 任何一段抓不到，就用系統語音把那一段補上，絕不中斷
+function sysChunk(piece, cb){
+  if (!('speechSynthesis' in window)) return cb && cb();
+  try { const u = new SpeechSynthesisUtterance(piece);
+    u.lang = 'zh-TW'; u.rate = 0.95 * (S.settings.rate || 1);
+    u.onend = cb; u.onerror = cb; speechSynthesis.speak(u);
+  } catch(e){ cb && cb(); }
+}
+function rvSpeak(text, onDone){
+  rvUnlock();
+  const q = rvChunks(text);
+  if (!q.length) return onDone && onDone();
+  rv.queue = q; rv.active = true; rv.onDone = onDone || null;
+  const my = ++rv.token, a = rvAudio();
+  try { if (navigator.mediaSession){
+    navigator.mediaSession.metadata = new MediaMetadata({ title:'321系統神學' });
+    navigator.mediaSession.playbackState = 'playing'; } } catch(e){}
+  const at = i => {
+    if (my !== rv.token) return;
+    if (i >= q.length){ rvStop(); speakMark(false); rv.onDone && rv.onDone(); return; }
+    rvPiece(q[i]).then(url => {
+      if (my !== rv.token) return;
+      a.onended = null; a.onerror = null; a.src = url;
+      a.onended = () => { if (my === rv.token) at(i+1); };
+      a.onerror = () => sysChunk(q[i], () => { if (my === rv.token) at(i+1); });
+      const p = a.play();
+      if (p && p.catch) p.catch(() => sysChunk(q[i], () => { if (my === rv.token) at(i+1); }));
+      if (q[i+1]) rvPiece(q[i+1]).catch(()=>{});
+    }).catch(() => sysChunk(q[i], () => { if (my === rv.token) at(i+1); }));
+  };
+  at(0);
+}
+let speaking = false;
+function speakMark(on){ speaking = on; $('#speak').classList.toggle('on', on); }
+function say(text){
+  if (!text || !text.trim()) return;
+  rvStop(); speakMark(true);
+  if (rvOn()) return rvSpeak(text, () => speakMark(false));
+  if (!('speechSynthesis' in window)){ speakMark(false); return alert('這台裝置不支援朗讀。'); }
+  const u = new SpeechSynthesisUtterance(text.slice(0, 6000));
+  u.lang = 'zh-TW'; u.rate = 0.92 * (S.settings.rate || 1);
+  u.onend = u.onerror = () => speakMark(false);
+  speechSynthesis.speak(u);
+}
+$('#speak').onclick = () => {
+  if (speaking){ rvStop(); speakMark(false); return; }
+  let txt;
+  if (RV && RV.q && RV.i < RV.q.length){
+    const v = meta(RV.q[RV.i]).memoryVerse; txt = v ? v.ref + '。' + v.text : '';
+  } else {
+    const src = $('#lbody') || $('#view');
+    txt = src.innerText.replace(/\s+/g,' ').slice(0, 6000);
+  }
+  say(txt);
+};
+
+/* ===== 小組現場模式 ===== */
+let LIVE = null;
+async function startLive(id){
+  const L = await getLesson(id);
+  const div = document.createElement('div'); div.innerHTML = L.views.live4;
+  const parts = [];
+  div.querySelectorAll('p, .pp').forEach(p => {
+    const t = p.innerText.trim(); if (!t) return;
+    const m = t.match(/^([①②③④])\s*(.+?)（(\d+)分鐘?）([\s\S]*)$/);
+    if (m) parts.push({ title: m[2], min:+m[3], body: m[4].trim(), note:'' });
+    else if (parts.length){
+      if (/^帶領提醒/.test(t)) parts[parts.length-1].note += t;
+      else parts[parts.length-1].body += '\n' + t;
+    }
+  });
+  if (!parts.length) return alert('本課的小組本尚未提供可帶領的段落。');
+  // 討論段落：一題一頁
+  const slides = [];
+  parts.forEach(p => {
+    const qs = /討論|實作|五題/.test(p.title) ? p.body.split(/\s(?=[1-5]\.\s)/).filter(x => /^[1-5]\.\s/.test(x)) : [];
+    if (qs.length >= 3){
+      const lead = p.body.split(/\s(?=1\.\s)/)[0];
+      const per = Math.max(1, Math.round(p.min / qs.length));
+      qs.forEach((q, k) => slides.push({
+        title: p.title + '　' + (k+1) + '/' + qs.length, min: per,
+        body: (k === 0 && lead && !/^1\./.test(lead) ? lead + '\n\n' : '') + q,
+        note: k === qs.length-1 ? p.note : ''
+      }));
+    } else slides.push(p);
+  });
+  LIVE = { parts: slides, i:0, left: slides[0].min*60, run:true, total: slides.reduce((a,b)=>a+b.min*60,0), id };
+  $('#live').classList.add('on'); drawLive(); tick();
+}
+function drawLive(){
+  const p = LIVE.parts[LIVE.i];
+  $('#lvbody').innerHTML = `<div style="font-size:.5em;letter-spacing:.24em;opacity:.6;margin-bottom:14px">
+      ${LIVE.i+1} / ${LIVE.parts.length}　${esc(p.title)}</div>
+    <div>${esc(p.body).replace(/\n/g,'<br><br>')}</div>
+    ${p.note ? `<div class="note">${esc(p.note)}</div>` : ''}`;
+  $('#lvnext').textContent = LIVE.i < LIVE.parts.length-1 ? '下一段 ›' : '完成';
+  $('#lvbody').scrollTop = 0;
+}
+let LT = null;
+function tick(){
+  clearInterval(LT);
+  LT = setInterval(() => {
+    if (!LIVE || !LIVE.run) return;
+    LIVE.left--;
+    const m = Math.max(0, Math.floor(LIVE.left/60)), s = Math.max(0, LIVE.left%60);
+    $('#lvclock').textContent = m + ':' + String(s).padStart(2,'0');
+    const done = LIVE.parts.slice(0,LIVE.i).reduce((a,b)=>a+b.min*60,0) + (LIVE.parts[LIVE.i].min*60 - LIVE.left);
+    $('#lvbar').style.width = Math.min(100, done/LIVE.total*100) + '%';
+  }, 1000);
+}
+$('#lvtoggle').onclick = e => { LIVE.run = !LIVE.run; e.target.textContent = LIVE.run ? '暫停' : '繼續'; };
+$('#lvnext').onclick = () => {
+  if (LIVE.i < LIVE.parts.length-1){ LIVE.i++; LIVE.left = LIVE.parts[LIVE.i].min*60; drawLive(); }
+  else closeLive();
+};
+$('#lvexit').onclick = closeLive;
+function closeLive(){ clearInterval(LT); LIVE = null; $('#live').classList.remove('on'); }
+
+/* ===== 繁殖卡 ===== */
+function cardHTML(L){
+  const c = L.views.cardData;
+  if (!c) return L.views.card || '';
+  return `<div class="tcard">
+    <div class="th"><small>321系統神學　第${L.number}課</small><b>${esc(c.title)}</b></div>
+    <div class="tb">
+      <ol>${c.lines.map(x => '<li>' + esc(x) + '</li>').join('')}</ol>
+      <div class="tv"><p>${esc(c.verse)}</p><span>${esc(c.ref)}</span></div>
+      <div class="tq"><small>一個問題 · 問對方</small><p>${esc(c.question)}</p></div>
+    </div>
+    <div class="tf">這張卡的目的是問一個好問題，不是給一篇好答案。</div>
+  </div>`;
+}
+function wrapText(ctx, text, maxW){
+  const out = []; let line = '';
+  for (const ch of text){
+    if (ch === '\n'){ out.push(line); line = ''; continue; }
+    if (ctx.measureText(line + ch).width > maxW && line){ out.push(line); line = ch; }
+    else line += ch;
+  }
+  if (line) out.push(line);
+  return out;
+}
+function makeImage(id){
+  const L = CACHE[id], c = L && L.views.cardData;
+  if (!c) return toast('本課的繁殖卡尚未結構化');
+  const W = 1080, PAD = 84, col = PC(L.part);
+  const SER = '"Noto Serif TC","Songti TC",serif', SAN = '"PingFang TC","Noto Sans TC",sans-serif';
+
+  // 第一遍：量測，決定高度
+  const m = document.createElement('canvas').getContext('2d');
+  m.font = '700 46px ' + SER;
+  const tl = wrapText(m, c.title.replace(/\s+/g,' '), W - PAD*2);
+  const headH = 150 + tl.length * 62;
+  m.font = '30px ' + SAN;
+  const bl = c.lines.map(t => wrapText(m, t, W - PAD*2 - 56));
+  m.font = '32px ' + SER;
+  const vl = wrapText(m, c.verse, W - PAD*2 - 62);
+  const vh = vl.length*50 + 78;
+  m.font = '600 32px ' + SAN;
+  const ql = wrapText(m, c.question, W - PAD*2);
+
+  let y = headH + 74;
+  const bodyTop = y;
+  bl.forEach(a => y += a.length*46 + 30);
+  const verseTop = y + 14; y = verseTop + vh + 54;
+  const qTop = y;
+  y = qTop + 62 + ql.length*48;
+  const H = Math.max(1080, y + 150);
+
+  const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+  const x = cv.getContext('2d');
+  x.textBaseline = 'alphabetic';
+  x.fillStyle = '#FAF8F3'; x.fillRect(0,0,W,H);
+
+  x.fillStyle = col; x.fillRect(0,0,W,headH);
+  x.fillStyle = 'rgba(255,255,255,.72)'; x.font = '28px ' + SAN;
+  x.fillText('321系統神學　第' + L.number + '課', PAD, 78);
+  x.fillStyle = '#fff'; x.font = '700 46px ' + SER;
+  tl.forEach((t,i) => x.fillText(t, PAD, 148 + i*62));
+
+  let yy = bodyTop;
+  bl.forEach((a,i) => {
+    x.fillStyle = col; x.font = '700 40px ' + SER;
+    x.fillText(String(i+1), PAD, yy);
+    x.fillStyle = '#20242B'; x.font = '30px ' + SAN;
+    a.forEach((ln,k) => x.fillText(ln, PAD + 56, yy + k*46));
+    yy += a.length*46 + 30;
+  });
+
+  x.fillStyle = '#F2EFE7'; x.fillRect(PAD, verseTop, W - PAD*2, vh);
+  x.fillStyle = '#8B5E1A'; x.fillRect(PAD, verseTop, 8, vh);
+  x.fillStyle = '#20242B'; x.font = '32px ' + SER;
+  vl.forEach((ln,k) => x.fillText(ln, PAD + 34, verseTop + 52 + k*50));
+  x.fillStyle = '#79828F'; x.font = '25px ' + SAN;
+  x.textAlign = 'right'; x.fillText(c.ref, W - PAD - 28, verseTop + vh - 22); x.textAlign = 'left';
+
+  x.strokeStyle = '#E4DFD4'; x.lineWidth = 2;
+  x.beginPath(); x.moveTo(PAD, qTop - 30); x.lineTo(W - PAD, qTop - 30); x.stroke();
+  x.fillStyle = '#79828F'; x.font = '24px ' + SAN;
+  x.fillText('一 個 問 題 　 問 對 方', PAD, qTop + 8);
+  x.fillStyle = '#20242B'; x.font = '600 32px ' + SAN;
+  ql.forEach((ln,k) => x.fillText(ln, PAD, qTop + 62 + k*48));
+
+  x.fillStyle = '#79828F'; x.font = '22px ' + SAN;
+  x.fillText('這張卡的目的是問一個好問題，不是給一篇好答案。', PAD, H - 66);
+  x.fillStyle = col; x.fillRect(0, H - 26, W, 26);
+
+  const url = cv.toDataURL('image/png');
+  sheet(`<p class="eyebrow">繁殖卡圖檔</p>
+    <h2 class="big">傳給一個人</h2>
+    <div id="cvwrap"><img src="${url}" alt="第${L.number}課繁殖卡"></div>
+    <p class="muted" style="margin:14px 0 0">在圖上長按即可儲存或分享。</p>
+    <div class="btnrow"><a class="btn pri" download="321繁殖卡_第${L.number}課.png" href="${url}">存成圖片</a></div>`);
+}
+
+/* ===== 畫線與註記 ===== */
+const marks = id => (S.marks[id] = S.marks[id] || []);
+const flatten = t => String(t||'').replace(/\s+/g, '');
+
+// 建立「去空白字元 → 文字節點座標」的對照表，讓畫線可以跨越粗體、連結等標籤
+function flatIndex(root){
+  const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const map = []; let n, flat = '';
+  while ((n = w.nextNode())){
+    const t = n.nodeValue;
+    for (let i = 0; i < t.length; i++){
+      if (!/\s/.test(t[i])){ map.push([n, i]); flat += t[i]; }
+    }
+  }
+  return { map, flat };
+}
+function wrapSpan(map, from, to, cls, idx){
+  const groups = [];
+  for (let k = from; k <= to; k++){
+    const [node, off] = map[k];
+    const g = groups[groups.length - 1];
+    if (g && g.node === node && off === g.end + 1) g.end = off;
+    else groups.push({ node, start: off, end: off });
+  }
+  groups.reverse().forEach(g => {
+    try {
+      if (g.node.parentNode && g.node.parentNode.nodeName === 'MARK') return;
+      const tail = g.node.splitText(g.start);
+      if (tail.nodeValue.length > g.end - g.start + 1) tail.splitText(g.end - g.start + 1);
+      const mk = document.createElement('mark');
+      mk.className = cls; mk.dataset.i = idx; mk.textContent = tail.nodeValue;
+      tail.parentNode.replaceChild(mk, tail);
+      mk.onclick = e => { e.stopPropagation(); markMenu(idx); };
+    } catch(e){}
+  });
+}
+function applyMarks(){
+  const root = $('#lbody'); if (!root) return;
+  const ms = S.marks[CUR.lesson] || []; if (!ms.length) return;
+  ms.forEach((m, i) => {
+    const q = m.f || flatten(m.q); if (q.length < 2) return;
+    let guard = 0;
+    while (guard++ < 20){
+      const { map, flat } = flatIndex(root);
+      const at = flat.indexOf(q);
+      if (at < 0) break;
+      // 已經包在 mark 裡就不重複處理
+      if (map[at][0].parentNode && map[at][0].parentNode.nodeName === 'MARK') break;
+      wrapSpan(map, at, at + q.length - 1, 'hl' + (m.note ? ' n' : ''), i);
+      break;
+    }
+  });
+}
+function markMenu(i){
+  const m = marks(CUR.lesson)[i]; if (!m) return;
+  sheet(`<p class="eyebrow">我畫的線</p>
+    <div class="card" style="background:#F6F3EC"><p style="margin:0;font-size:.9em;line-height:1.8">${esc(m.q)}</p></div>
+    <p class="eyebrow">我的註記</p>
+    <textarea id="mknote" rows="4" placeholder="寫下你在這裡看見的…">${esc(m.note || '')}</textarea>
+    <div class="btnrow">
+      <button class="btn pri" onclick="markSave(${i})">存起來</button>
+      <button class="btn" onclick="say(${JSON.stringify(JSON.stringify(m.q))})">朗讀這段</button>
+      <button class="btn" onclick="$('#sheet').classList.remove('on');askAI('請解釋這一段：' + ${JSON.stringify(JSON.stringify(m.q))})">問小智</button>
+      <button class="btn" onclick="markDel(${i})">刪除</button></div>`);
+}
+function markSave(i){
+  const m = marks(CUR.lesson)[i]; if (!m) return;
+  m.note = $('#mknote').value.trim(); save();
+  $('#sheet').classList.remove('on'); renderLesson(CACHE[CUR.lesson]); toast('已存');
+}
+function markDel(i){
+  marks(CUR.lesson).splice(i, 1); save();
+  $('#sheet').classList.remove('on'); renderLesson(CACHE[CUR.lesson]); toast('已刪除');
+}
+function addMark(q, withNote){
+  q = q.replace(/\s+/g, ' ').trim();
+  if (q.length < 2) return;
+  if (q.length > 300) q = q.slice(0, 300);
+  const ms = marks(CUR.lesson), f = flatten(q);
+  if (ms.some(m => (m.f || flatten(m.q)) === f)) return toast('這一段已經畫過線了');
+  ms.push({ q, f, note:'', t: Date.now() }); save();
+  hideSel();
+  if (CACHE[CUR.lesson]) renderLesson(CACHE[CUR.lesson]);
+  if (withNote) setTimeout(() => markMenu(ms.length - 1), 120);
+  else toast('已畫線');
+}
+
+/* ---- 選取工具列 ---- */
+let SELTXT = '';
+function hideSel(){ $('#selbar').classList.remove('on'); SELTXT = ''; try { getSelection().removeAllRanges(); } catch(e){} }
+function onSelect(){
+  const body = $('#lbody'); if (!body) return hideSel();
+  const sel = getSelection();
+  if (!sel || sel.isCollapsed) return hideSel();
+  const t = sel.toString().trim();
+  if (t.length < 2 || !body.contains(sel.anchorNode)) return hideSel();
+  SELTXT = t;
+  const r = sel.getRangeAt(0).getBoundingClientRect();
+  const bar = $('#selbar'); bar.classList.add('on');
+  const w = bar.offsetWidth || 280;
+  bar.style.left = Math.max(10, Math.min(innerWidth - w - 10, r.left + r.width/2 - w/2)) + 'px';
+  const top = r.top - bar.offsetHeight - 12;
+  bar.style.top = (top > 70 ? top : r.bottom + 12) + 'px';
+}
+document.addEventListener('mouseup', () => setTimeout(onSelect, 10));
+document.addEventListener('touchend', () => setTimeout(onSelect, 10));
+$('#sbHL').onclick    = () => addMark(SELTXT, false);
+$('#sbNote').onclick  = () => addMark(SELTXT, true);
+$('#sbSpeak').onclick = () => { const t = SELTXT; hideSel(); say(t); };
+$('#sbAsk').onclick   = () => { const t = SELTXT; hideSel(); askAI('請解釋這一段：' + t); };
+
+/* ===== 錄音 ===== */
+let REC = null, RECT = null;
+async function recStart(id){
+  if (!navigator.mediaDevices || !window.MediaRecorder) return alert('這台裝置或瀏覽器不支援錄音。');
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio:true });
+    const mime = ['audio/mp4','audio/webm;codecs=opus','audio/webm']
+      .find(m => MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(m)) || '';
+    const mr = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined);
+    const parts = [];
+    mr.ondataavailable = e => e.data.size && parts.push(e.data);
+    mr.onstop = async () => {
+      stream.getTracks().forEach(t => t.stop());
+      const blob = new Blob(parts, { type: mime || 'audio/webm' });
+      await idbPut('rec', id + '|' + Date.now(), blob);
+      REC = null; clearInterval(RECT);
+      renderLesson(CACHE[id]); toast('錄音已存');
+    };
+    mr.start();
+    REC = { mr, id, t0: Date.now() };
+    renderLesson(CACHE[id]);
+    RECT = setInterval(() => { const e = $('#recclock'); if (e)
+      e.textContent = Math.floor((Date.now() - REC.t0)/1000) + ' 秒'; }, 500);
+  } catch(e){ alert('無法使用麥克風。請確認已允許錄音權限。'); }
+}
+function recStop(){ if (REC) try { REC.mr.stop(); } catch(e){} }
+async function recList(id){
+  const ks = (await idbKeys('rec')).filter(k => String(k).startsWith(id + '|'));
+  const host = $('#reclist'); if (!host) return;
+  if (!ks.length){ host.innerHTML = ''; return; }
+  host.innerHTML = ks.sort().reverse().map(k => {
+    const d = new Date(+String(k).split('|')[1]);
+    return `<div class="rec"><span class="rt">${d.getMonth()+1}/${d.getDate()}　${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}</span>
+      <button class="btn" onclick="recPlay('${k}',this)">播放</button>
+      <button class="btn" onclick="recDel('${k}')">刪除</button></div>`;
+  }).join('');
+}
+async function recPlay(k, btn){
+  const b = await idbGet('rec', k); if (!b) return;
+  const wrap = btn.parentNode;
+  if (wrap.querySelector('audio')) return;
+  const a = document.createElement('audio'); a.controls = true; a.src = URL.createObjectURL(b);
+  wrap.style.flexWrap = 'wrap'; wrap.appendChild(a); a.play();
+}
+async function recDel(k){ await idbDel('rec', k); recList(CUR.lesson); toast('已刪除'); }
+
+/* ===== AI 小智 ===== */
+const AI = { msgs: [], busy: false };
+const aiOn = () => /^https?:\/\//i.test(CFG.aiEndpoint || '');
+function aiQuicks(){
+  return CUR.lesson
+    ? ['這一課的重點是什麼？','這一課哪些是 A 層、哪些只是 321 的說法？','怎麼把這一課活在生活中？','請用這一課為我簡短禱告']
+    : ['321 理念是什麼？','什麼是「無己」？','系統神學為什麼重要？','請為我今天簡短禱告'];
+}
+function aiContext(){
+  const L = CUR.lesson && CACHE[CUR.lesson]; if (!L) return '';
+  const strip = h => String(h||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
+  const P = [`第${L.number}課：${L.title}（${L.partName}）`];
+  if (L.oneLineTruth) P.push('一句話核心真理：' + L.oneLineTruth);
+  if (L.coreVerses && L.coreVerses.length)
+    P.push('核心經文：' + L.coreVerses.map(v => v.ref + '「' + v.text + '」').join('；'));
+  P.push('學員本內容：' + strip(L.views.core8).slice(0, 4500));
+  if (L.parts.revisions) P.push('本課如何修正321：' + strip(L.parts.revisions).slice(0, 1200));
+  if (L.parts.tiers) P.push('三層分辨（A聖經明說／B神學結論／C321應用語言）：' + strip(L.parts.tiers).slice(0, 900));
+  if (L.parts.closing) P.push('本課的限度：' + strip(L.parts.closing));
+  return P.join('\n');
+}
+function aiSystem(){
+  const L = [
+    '你是「小智」，是《321系統神學》App 裡的神學助教，像一位陪讀的屬靈朋友：謙卑、溫暖、滿有盼望。',
+    '',
+    '【三條戒律，最重要】',
+    '一、有據：回答要指出依據哪一課、哪一節經文，並標明這是 A 層（聖經明確教導）、B 層（從聖經整理的神學結論）還是 C 層（321 的應用性語言）。教材沒有處理的，就明說「教材沒有處理這個，以下只是一般的說法」。',
+    '二、不定案：B 層的神學爭議不下定論，公平呈現不同立場，讓對方自己在聖經面前判斷。',
+    '三、轉介：涉及個人生命的重大處境（婚姻危機、憂鬱、屬靈權柄的傷害、想傷害自己），先表達關心，並鼓勵他與牧者或專業人員談。不假裝專業、不下診斷、不擅自給輔導方案。',
+    '',
+    '【你的界線】',
+    '你不是聖靈，也不能代替神；你絕不取代真實的牧者、屬靈父母與屬靈同伴。',
+    '你總是把人引向耶穌、聖經、禱告與聖靈的引導，並鼓勵他與真實的屬靈群體連結（235：屬靈同伴、屬靈父母兒女、屬靈戰友）。',
+    '鼓勵對方親自禱告、親自查考，而不是依賴你。焦點在耶穌，不在你，也不在對方自己。',
+    '',
+    '【321 理念，是你一切回應的根基】',
+    '三個基礎：耶穌是我的榜樣、聖經是我的準則、聖靈是我的引導。',
+    '兩個核心：讓耶穌作王、讓耶穌得到一切的榮耀。一個目的：建立屬神的體系。',
+    '核心生命：無己、謙卑勝過驕傲、用心靠聖靈不用腦靠自己、先生命再關係後事工。',
+    '但要記得：321 本身是 C 層的工具，不是聖經。教材自己列出了 321 需要被聖經修正的地方，你也可以誠實指出來。',
+    '',
+    '【語言與風格】一律用繁體中文回答，引用聖經一律使用《和合本》。',
+    '只在你有把握時引用經文，絕不杜撰經文或出處；不確定就如實說明，請對方自行查考。',
+    '深入淺出、善用比喻、條理清晰、溫暖有盼望。回應精簡，通常二、三段內。',
+    '不要使用 Markdown 語法（不用井號標題、不用星號粗體、不用表格），用自然段落文字即可。',
+    '',
+    '【安全】只在信仰、聖經、神學、屬靈成長、品格與生活應用、為人禱告、鼓勵造就的範圍內服事。不論斷人、不捲入政治爭論。',
+    '',
+    '【每則回答的結尾】請固定另起一段，寫上這一句：「我可能會錯。請你自己回到聖經查考（徒17:11）。」'
+  ];
+  const c = aiContext();
+  if (c) L.push('', '【對方正在讀這一課，請緊扣課文陪他】', c);
+  return L.join('\n');
+}
+function aiOpen(pre){
+  if (!aiOn()) return toast('AI 尚未設定');
+  $('#ai').classList.add('on');
+  $('#aictx').textContent = CUR.lesson ? '第' + meta(CUR.lesson).number + '課' : '';
+  aiRender();
+  if (pre){ $('#aiin').value = ''; aiSend(pre); }
+}
+function askAI(q){ aiOpen(q); }
+function aiRender(){
+  const box = $('#aimsgs');
+  box.innerHTML = AI.msgs.length ? AI.msgs.map((m, i) =>
+    `<div class="m ${m.role === 'user' ? 'u' : 'a'}"><span>${esc(m.text).replace(/\n/g,'<br>')}
+      ${m.role === 'assistant' ? `<br><button class="spk" onclick="say(${JSON.stringify(JSON.stringify(m.text))})">朗讀</button>` : ''}
+    </span></div>`).join('')
+    : `<div class="m a"><span>平安！我是小智。<br><br>你可以問我這一課的內容，或任何關於聖經與 321 的問題。<br><br>我會告訴你答案的依據在哪一課、哪一節經文，也會標明那是聖經明說的，還是我們的整理。</span></div>`;
+  if (AI.busy) box.insertAdjacentHTML('beforeend', '<div class="m a"><span>小智正在想…</span></div>');
+  box.scrollTop = box.scrollHeight;
+  $('#aiquick').innerHTML = aiQuicks().map(q =>
+    `<button onclick="aiSend(${JSON.stringify(JSON.stringify(q))})">${esc(q)}</button>`).join('');
+}
+async function aiSend(text){
+  const q = (text != null ? text : $('#aiin').value).trim();
+  if (!q || AI.busy) return;
+  $('#aiin').value = '';
+  AI.msgs.push({ role:'user', text:q }); AI.busy = true; aiRender();
+  if (navigator.onLine === false){
+    AI.msgs.push({ role:'assistant', text:'現在沒有網路，小智暫時無法回應。課文與金句都還可以離線使用。' });
+    AI.busy = false; return aiRender();
+  }
+  const ctrl = window.AbortController ? new AbortController() : null;
+  const timer = ctrl ? setTimeout(() => { try { ctrl.abort(); } catch(e){} }, 45000) : null;
+  try {
+    const res = await fetch(CFG.aiEndpoint, {
+      method:'POST', headers:{'Content-Type':'application/json'}, signal: ctrl ? ctrl.signal : undefined,
+      body: JSON.stringify({ model: CFG.aiModel, max_tokens: 1000, system: aiSystem(),
+        messages: AI.msgs.slice(-12).map(m => ({ role:m.role, content:m.text })) })
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const d = await res.json();
+    const t = (d.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n').trim();
+    AI.msgs.push({ role:'assistant', text: t || '小智這次沒有回應內容，請再問一次。' });
+  } catch(e){
+    AI.msgs.push({ role:'assistant', text: (e && e.name === 'AbortError')
+      ? '等太久了，請再試一次。' : '連線出了狀況，請稍後再試。' });
+  } finally { if (timer) clearTimeout(timer); }
+  AI.busy = false; aiRender();
+}
+$('#aibtn').onclick   = () => aiOpen();
+$('#aiclose').onclick = () => $('#ai').classList.remove('on');
+$('#aiclear').onclick = () => { AI.msgs = []; aiRender(); };
+$('#aisend').onclick  = () => aiSend();
+$('#aiin').onkeydown  = e => { if (e.key === 'Enter') aiSend(); };
+$('#ai').onclick = e => { if (e.target.id === 'ai') $('#ai').classList.remove('on'); };
+
+/* ===== 提示 ===== */
+let TT = null;
+function toast(msg){
+  let t = $('#toast');
+  if (!t){ t = el('<div id="toast" style="position:fixed;left:50%;bottom:calc(96px + var(--safe-b));transform:translateX(-50%);background:#20242B;color:#fff;padding:12px 20px;border-radius:999px;font-size:.7em;z-index:99;letter-spacing:.08em"></div>'); document.body.appendChild(t); }
+  t.textContent = msg; t.style.opacity = 1;
+  clearTimeout(TT); TT = setTimeout(() => t.style.opacity = 0, 1600);
+}
+
+window.openLesson = openLesson; window.setDepth = setDepth; window.toggleStep = toggleStep;
+window.saveNote = saveNote; window.showLex = showLex; window.showVerse = showVerse;
+window.vLexicon = vLexicon; window.vVerses = vVerses; window.vDiag = vDiag; window.vRevisions = vRevisions;
+window.openDiag = openDiag; window.openRev = openRev; window.setFS = setFS;
+window.exportData = exportData; window.startLive = startLive; window.$ = $;
+window.makeImage = makeImage; window.told = told; window.vMemory = vMemory;
+window.say = say; window.askAI = askAI; window.aiSend = aiSend; window.aiOpen = aiOpen;
+window.markMenu = markMenu; window.markSave = markSave; window.markDel = markDel;
+window.recStart = recStart; window.recStop = recStop; window.recPlay = recPlay; window.recDel = recDel;
+window.setVoice = setVoice; window.setRate = setRate; window.clearVoiceCache = clearVoiceCache;
+window.startReview = startReview; window.drawReview = drawReview; window.grade = grade; window.memAdd = memAdd;
+
+boot();
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>
