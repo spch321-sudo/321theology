@@ -1263,6 +1263,17 @@ function refsForSpeech(text){
   t = t.replace(new RegExp('(' + BOOK_RE + ')\\s*(\\d+)\\s*章', 'g'), (all, b, c) => bookFull(b) + c + '章');
   // 詩23篇 → 詩篇第23篇
   t = t.replace(/詩\s*(\d+)\s*篇/g, (all, n) => '詩篇第' + n + '篇');
+  return sayFix(t);
+}
+/* 讀音校正：破音字與 321 系列專用語詞 */
+const SAYNUM = { '321':'三二一', '920':'九二零', '235':'二三五' };
+function sayFix(text){
+  let t = String(text || '');
+  // 「使徒行傳」的傳讀ㄓㄨㄢˋ，用同音字讓語音引擎讀對（只影響朗讀，畫面不變）
+  t = t.replace(/使徒行傳/g, '使徒行撰');
+  // 321、920、235 一律逐字讀，不讀成三百二十一
+  t = t.replace(/(^|[^0-9:：\-–—])(321|920|235)(?![0-9:：\-–—章節篇])/g,
+    (all, pre, n) => pre + SAYNUM[n]);
   return t;
 }
 // 依標點切句，每段 100–300 字：唸起來自然，請求也不會太碎
