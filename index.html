@@ -76,6 +76,15 @@ h2.big{font-family:var(--serif);font-size:1.35em;font-weight:700;margin:0 0 14px
   border-bottom:2px solid var(--accent)}
 .partbar b{font-family:var(--serif);font-size:1.1em}
 .partbar span{font-size:.68em;color:var(--ink3)}
+button.partbar{width:100%;background:none;border:0;border-bottom:2px solid var(--accent);
+  text-align:left;font-family:inherit;padding:0 0 8px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+button.partbar .pcount{margin-left:auto;font-size:.68em;color:var(--ink3);white-space:nowrap}
+button.partbar .pchev{font-size:.72em;color:var(--ink3);margin-left:6px}
+.body .ms{border-radius:4px;-webkit-tap-highlight-color:transparent}
+.body .ms:active{background:rgba(13,57,136,.09)}
+.body .mknote{font-size:.78em;line-height:1.75;color:var(--ink2);background:#F2EFE7;
+  border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:8px 12px;margin:6px 0 14px;cursor:pointer}
+.body .mknote b{color:var(--accent);font-size:.92em;margin-right:8px;letter-spacing:.06em}
 .row{display:flex;gap:14px;align-items:center;background:var(--card);border:1px solid var(--line);
   border-radius:16px;padding:14px 16px;margin-bottom:10px;width:100%;text-align:left}
 .row .num{font-family:var(--serif);font-size:1.15em;font-weight:700;color:var(--accent);
@@ -391,10 +400,11 @@ const idbKeys = st => db().then(d => new Promise(res => {
 /* ===== 儲存 ===== */
 const KEY = 'g321theo';
 const DEF = { settings:{ fs:1, depth:'core8', voice:'yunjhe', rate:1 },
-  progress:{}, notes:{}, marks:{}, last:null, memory:{}, favs:[] };
+  progress:{}, notes:{}, marks:{}, last:null, memory:{}, favs:[], foldParts:{} };
 let S = (() => { try { const o = Object.assign({}, DEF, JSON.parse(localStorage.getItem(KEY) || '{}'));
     o.settings = Object.assign({}, DEF.settings, o.settings || {}); o.marks = o.marks || {};
-    if (!Array.isArray(o.favs)) o.favs = []; return o; } catch(e){ return JSON.parse(JSON.stringify(DEF)); } })();
+    if (!Array.isArray(o.favs)) o.favs = [];
+    if (!o.foldParts || typeof o.foldParts !== 'object') o.foldParts = {}; return o; } catch(e){ return JSON.parse(JSON.stringify(DEF)); } })();
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} };
 const prog = id => (S.progress[id] = S.progress[id] || { steps:[], practice:'', review:'', who:'', whoAt:0, told:0, nudge:0 });
 const DAY = 864e5;
@@ -593,15 +603,30 @@ function told(id, yes){
 }
 
 /* ===== 課程 ===== */
+function partOpen(p){
+  if (S.foldParts && S.foldParts[p] !== undefined) return !!S.foldParts[p];
+  const l = S.last ? IDX.lessons.find(x => x.id === S.last) : null;
+  return l ? l.part === p : p === 1;   // 預設只展開你正在讀的那一部
+}
+function togglePart(p){
+  S.foldParts = S.foldParts || {};
+  S.foldParts[p] = !partOpen(p); save(); vCourses();
+}
 function vCourses(){
   $('#ttl').textContent = '課程';
+  const parts = Object.keys(IDX.parts).map(Number).sort((a,b) => a - b);
   let h = `<div class="sect"><p class="eyebrow">四部 · 二十五課</p>
-    <h2 class="big">把神的話拼成一幅圖</h2></div>`;
-  [1,2,3,4].forEach(p => {
-    const P = IDX.parts[p];
-    h += `<div class="partbar" style="border-color:${PC(p)}">
-      <b style="color:${PC(p)}">第${['','一','二','三','四'][p]}部　${P.name}</b><span>${P.sub}</span></div>`;
-    IDX.lessons.filter(l => l.part === p).forEach(l => {
+    <h2 class="big">把神的話拼成一幅圖</h2>
+    <p class="muted">點一下部別標題，可以收起或展開該部課程。</p></div>`;
+  parts.forEach(p => {
+    const P = IDX.parts[p], ls = IDX.lessons.filter(l => l.part === p), open = partOpen(p);
+    const done = ls.filter(l => (prog(l.id).steps || []).length >= 8).length;
+    h += `<button class="partbar" style="border-color:${PC(p)}" onclick="togglePart(${p})">
+      <b style="color:${PC(p)}">第${['','一','二','三','四','五','六'][p]}部　${P.name}</b>
+      <span>${P.sub}</span>
+      <span class="pcount">${done}/${ls.length}<span class="pchev">${open ? '▾' : '▸'}</span></span></button>`;
+    if (!open) return;
+    ls.forEach(l => {
       h += `<button class="row" style="color:${PC(p)}" onclick="openLesson('${l.id}')">
         <span class="num">${l.number}</span>
         <span class="t"><b style="color:var(--ink)">${esc(l.title)}</b>
@@ -633,7 +658,7 @@ async function openLesson(id, depth){
 function renderLesson(L){
   const p = prog(L.id);
   let h = `<div class="sect">
-    <p class="eyebrow">第${['','一','二','三'][L.part]}部 · ${L.partName} · 第${L.number}課
+    <p class="eyebrow">第${['','一','二','三','四'][L.part]}部 · ${L.partName} · 第${L.number}課
       <span class="pill ${L.level==='A'?'A':'B'}" style="margin-left:8px">${L.level}級</span></p>
     <h2 class="big">${esc(L.title)}</h2>
     <p style="font-family:var(--serif);font-size:1.02em;line-height:1.75;color:var(--ink2);margin:0">
@@ -684,7 +709,7 @@ function renderLesson(L){
     ? ms.map((m,i) => `<p style="margin:0 0 12px;font-size:.82em;line-height:1.75;cursor:pointer" onclick="markMenu(${i})">
         <span style="background:linear-gradient(transparent 58%,rgba(201,162,39,.42) 58%)">${esc(m.q.slice(0,70))}${m.q.length>70?'…':''}</span>
         ${m.note ? `<br><span class="muted">✎ ${esc(m.note)}</span>` : ''}</p>`).join('')
-    : '<p class="muted" style="margin:0">在課文上選取一段文字，就會跳出「畫線」。畫過的線會留在這裡。</p>';
+    : '<p class="muted" style="margin:0">點一下任何一句話就會畫線，再點一下可以寫筆記。也可以選取一段文字。畫過的線都留在這裡。</p>';
   h += '</div>';
 
   // 錄音
@@ -1557,8 +1582,95 @@ function wrapSpan(map, from, to, cls, idx){
     } catch(e){}
   });
 }
+/* ---- 逐句可點：點一下畫線，再點一下寫筆記 ---- */
+const SENT_END = /[。！？；!?]/;
+const SENT_TAIL = '」』）)】》"\u2019\u201d';
+function sentRanges(flat){
+  const r = []; let s = 0;
+  for (let i = 0; i < flat.length; i++){
+    if (!SENT_END.test(flat[i])) continue;
+    let j = i;
+    while (j + 1 < flat.length && SENT_TAIL.includes(flat[j + 1])) j++;
+    if (j - s + 1 >= 4){ r.push([s, j]); s = j + 1; i = j; }
+  }
+  if (flat.length - s >= 4) r.push([s, flat.length - 1]);
+  else if (r.length) r[r.length - 1][1] = flat.length - 1;
+  return r;
+}
+function wrapRange(map, from, to, make){
+  const groups = [];
+  for (let k = from; k <= to; k++){
+    const [node, off] = map[k];
+    const g = groups[groups.length - 1];
+    if (g && g.node === node && off === g.end + 1) g.end = off;
+    else groups.push({ node, start: off, end: off });
+  }
+  groups.reverse().forEach(g => {
+    try {
+      if (g.node.parentNode && /^(MARK|SPAN)$/.test(g.node.parentNode.nodeName)
+          && g.node.parentNode.classList.contains('ms')) return;
+      const tail = g.node.splitText(g.start);
+      if (tail.nodeValue.length > g.end - g.start + 1) tail.splitText(g.end - g.start + 1);
+      const el = make(); el.textContent = tail.nodeValue;
+      tail.parentNode.replaceChild(el, tail);
+    } catch(e){}
+  });
+}
+function wrapSentences(){
+  const root = $('#lbody'); if (!root) return;
+  root.querySelectorAll('p,li,h4,td,th').forEach(el => {
+    if (el.closest('pre') || el.querySelector('span.ms')) return;
+    const { map, flat } = flatIndex(el);
+    if (flat.length < 4) return;
+    const rs = sentRanges(flat);
+    if (rs.length < 1) return;
+    for (let i = rs.length - 1; i >= 0; i--){
+      wrapRange(map, rs[i][0], rs[i][1], () => {
+        const s = document.createElement('span'); s.className = 'ms'; s.dataset.s = i; return s;
+      });
+    }
+    const bucket = {};
+    el.querySelectorAll('span.ms').forEach(s => {
+      (bucket[s.dataset.s] = bucket[s.dataset.s] || []).push(s);
+    });
+    Object.keys(bucket).forEach(k => {
+      const list = bucket[k], q = list.map(x => x.textContent).join('');
+      list.forEach(s => { s.onclick = ev => {
+        // 經文連結、原文連結、已畫線的段落，交給它們自己處理
+        if (ev.target && ev.target.closest && ev.target.closest('a,mark')) return;
+        ev.stopPropagation(); tapSentence(q);
+      }; });
+    });
+  });
+}
+function tapSentence(q){
+  const t = String(q || '').replace(/\s+/g, ' ').trim();
+  if (t.length < 2) return;
+  const ms = marks(CUR.lesson), f = flatten(t);
+  const i = ms.findIndex(m => (m.f || flatten(m.q)) === f);
+  if (i >= 0) return markMenu(i);                 // 已畫線 → 打開筆記
+  ms.push({ q: t.slice(0,300), f, note:'', t: Date.now() }); save();
+  renderLesson(CACHE[CUR.lesson]);
+  toast('已畫線　·　再點一下可寫筆記');
+}
+function showNotes(){
+  const root = $('#lbody'); if (!root) return;
+  root.querySelectorAll('.mknote').forEach(n => n.remove());
+  (S.marks[CUR.lesson] || []).forEach((m, i) => {
+    if (!m.note) return;
+    const mk = root.querySelector('mark[data-i="' + i + '"]'); if (!mk) return;
+    const blk = mk.closest('p,li,h4,td,pre') || mk.parentNode;
+    const d = document.createElement('div');
+    d.className = 'mknote';
+    d.innerHTML = '<b>我的筆記</b>' + esc(m.note).replace(/\n/g, '<br>');
+    d.onclick = ev => { ev.stopPropagation(); markMenu(i); };
+    if (/^(LI|TD|TH)$/.test(blk.tagName)) blk.appendChild(d);
+    else blk.parentNode.insertBefore(d, blk.nextSibling);
+  });
+}
 function applyMarks(){
   const root = $('#lbody'); if (!root) return;
+  wrapSentences();
   const ms = S.marks[CUR.lesson] || []; if (!ms.length) return;
   ms.forEach((m, i) => {
     const q = m.f || flatten(m.q); if (q.length < 2) return;
@@ -1573,6 +1685,7 @@ function applyMarks(){
       break;
     }
   });
+  showNotes();
 }
 function markMenu(i){
   const m = marks(CUR.lesson)[i]; if (!m) return;
@@ -1855,6 +1968,7 @@ window.openDiag = openDiag; window.openRev = openRev; window.setFS = setFS;
 window.exportData = exportData; window.startLive = startLive; window.$ = $;
 window.makeImage = makeImage; window.told = told; window.vMemory = vMemory;
 window.say = say; window.askAI = askAI; window.aiSend = aiSend; window.aiOpen = aiOpen;
+window.togglePart = togglePart; window.tapSentence = tapSentence;
 window.aiFold = aiFold; window.aiFav = aiFav; window.aiDel = aiDel;
 window.aiFavDel = aiFavDel; window.aiFavView = aiFavView;
 window.markMenu = markMenu; window.markSave = markSave; window.markDel = markDel;
