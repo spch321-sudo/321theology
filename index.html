@@ -250,6 +250,15 @@ mark.hl.n::after{content:"✎";font-size:.62em;color:var(--p1);vertical-align:su
 #ai .inp button{background:var(--p1);color:#fff;border-radius:14px;padding:0 18px;font-size:.76em}
 #ai .note{font-size:.62em;color:var(--ink3);line-height:1.7;padding:8px 18px 0}
 #ai .spk{margin-top:8px;font-size:.6em;color:var(--ink3);border:1px solid var(--line);border-radius:999px;padding:5px 12px}
+#ai .m.a .tx{display:block}
+#ai .m.a .tx.fold{max-height:7.6em;overflow:hidden;
+  -webkit-mask-image:linear-gradient(#000 62%,transparent);mask-image:linear-gradient(#000 62%,transparent)}
+#ai .mact{display:flex;flex-wrap:wrap;gap:14px;margin-top:11px;padding-top:10px;border-top:1px dashed var(--line)}
+#ai .mact button{font-size:.62em;letter-spacing:.06em;color:var(--p1);white-space:nowrap;padding:2px 0}
+#ai .mact button.mut{color:var(--ink3)}
+#ai .favcard{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin:0 0 12px}
+#ai .favcard .fh{font-size:.6em;letter-spacing:.1em;color:var(--ink3);margin:0 0 8px}
+#ai .favcard .fb{font-size:.84em;line-height:1.85}
 
 /* ---------- 啟動畫面 ---------- */
 #boot{position:fixed;inset:0;z-index:120;background:#0D3988;display:flex;flex-direction:column;
@@ -309,6 +318,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:26px 0}
 <button id="aibtn" aria-label="小智　AI 屬靈小幫手"><i>✦</i><span><b>小智</b><small>AI 屬靈小幫手</small></span></button>
 <div id="ai"><div class="box">
   <div class="hd"><span style="flex:1"><b style="display:block;font-family:var(--serif);font-size:.92em">小智</b><small style="display:block;font-size:.56em;color:var(--ink3);letter-spacing:.1em">AI 屬靈小幫手</small></span><small id="aictx"></small>
+    <button class="iconbtn" id="aifav" aria-label="收藏">★</button>
     <button class="iconbtn" id="aiclear" aria-label="清除">↺</button>
     <button class="iconbtn" id="aiclose" aria-label="關閉">✕</button></div>
   <div class="msgs" id="aimsgs"></div>
@@ -381,9 +391,10 @@ const idbKeys = st => db().then(d => new Promise(res => {
 /* ===== 儲存 ===== */
 const KEY = 'g321theo';
 const DEF = { settings:{ fs:1, depth:'core8', voice:'yunjhe', rate:1 },
-  progress:{}, notes:{}, marks:{}, last:null, memory:{} };
+  progress:{}, notes:{}, marks:{}, last:null, memory:{}, favs:[] };
 let S = (() => { try { const o = Object.assign({}, DEF, JSON.parse(localStorage.getItem(KEY) || '{}'));
-    o.settings = Object.assign({}, DEF.settings, o.settings || {}); o.marks = o.marks || {}; return o; } catch(e){ return JSON.parse(JSON.stringify(DEF)); } })();
+    o.settings = Object.assign({}, DEF.settings, o.settings || {}); o.marks = o.marks || {};
+    if (!Array.isArray(o.favs)) o.favs = []; return o; } catch(e){ return JSON.parse(JSON.stringify(DEF)); } })();
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} };
 const prog = id => (S.progress[id] = S.progress[id] || { steps:[], practice:'', review:'', who:'', whoAt:0, told:0, nudge:0 });
 const DAY = 864e5;
@@ -1212,6 +1223,48 @@ function rvUnlock(){
 const rvVoice = () => (CFG.ttsVoices[S.settings.voice] || CFG.ttsVoices.yunjhe).name;
 const rvRate  = () => { const pct = Math.round(((S.settings.rate || 1) - 1) * 100);
                         return (pct >= 0 ? '+' : '') + pct + '%'; };
+/* ===== 朗讀前：把經文簡寫展開成完整卷名，例如 林後12:9 → 哥林多後書12章9節 ===== */
+const BOOKS = {
+  '創':'創世記','出':'出埃及記','利':'利未記','民':'民數記','申':'申命記',
+  '書':'約書亞記','士':'士師記','得':'路得記','撒上':'撒母耳記上','撒下':'撒母耳記下',
+  '王上':'列王紀上','王下':'列王紀下','代上':'歷代志上','代下':'歷代志下',
+  '拉':'以斯拉記','尼':'尼希米記','斯':'以斯帖記','伯':'約伯記','詩':'詩篇',
+  '箴':'箴言','傳':'傳道書','歌':'雅歌','賽':'以賽亞書','耶':'耶利米書',
+  '哀':'耶利米哀歌','結':'以西結書','但':'但以理書','何':'何西阿書','珥':'約珥書',
+  '摩':'阿摩司書','俄':'俄巴底亞書','拿':'約拿書','彌':'彌迦書','鴻':'那鴻書',
+  '哈':'哈巴谷書','番':'西番雅書','該':'哈該書','亞':'撒迦利亞書','瑪':'瑪拉基書',
+  '太':'馬太福音','可':'馬可福音','路':'路加福音','約':'約翰福音','徒':'使徒行傳',
+  '羅':'羅馬書','林前':'哥林多前書','林後':'哥林多後書','加':'加拉太書','弗':'以弗所書',
+  '腓':'腓立比書','西':'歌羅西書','帖前':'帖撒羅尼迦前書','帖後':'帖撒羅尼迦後書',
+  '提前':'提摩太前書','提後':'提摩太後書','多':'提多書','門':'腓利門書','來':'希伯來書',
+  '雅':'雅各書','彼前':'彼得前書','彼後':'彼得後書','約壹':'約翰一書','約貳':'約翰二書',
+  '約參':'約翰三書','猶':'猶大書','啟':'啟示錄'
+};
+const BOOK_RE = (() => {
+  const keys = Object.keys(BOOKS);
+  Object.values(BOOKS).forEach(v => { if (keys.indexOf(v) < 0) keys.push(v); });
+  keys.sort((a,b) => b.length - a.length);
+  return keys.join('|');
+})();
+const bookFull = k => BOOKS[k] || k;
+// 「3-5」→「3到5節」；「5,7」→「5節、7節」
+function vsSpeak(s){
+  return String(s).split(/[,，、]/).filter(Boolean).map(x => {
+    const m = x.match(/^\s*(\d+)\s*[-–—~～]\s*(\d+)\s*$/);
+    return m ? (m[1] + '到' + m[2] + '節') : (x.trim() + '節');
+  }).join('、');
+}
+function refsForSpeech(text){
+  let t = String(text || '');
+  // 卷名＋章:節（含範圍與列舉）
+  t = t.replace(new RegExp('(' + BOOK_RE + ')\\s*(\\d+)\\s*[:：]\\s*(\\d+(?:\\s*[-–—~～]\\s*\\d+)?(?:\\s*[,，、]\\s*\\d+(?:\\s*[-–—~～]\\s*\\d+)?)*)', 'g'),
+    (all, b, c, v) => { const f = bookFull(b); return f + c + (f === '詩篇' ? '篇' : '章') + vsSpeak(v); });
+  // 卷名＋章節（已是「章」「節」但仍是簡寫）
+  t = t.replace(new RegExp('(' + BOOK_RE + ')\\s*(\\d+)\\s*章', 'g'), (all, b, c) => bookFull(b) + c + '章');
+  // 詩23篇 → 詩篇第23篇
+  t = t.replace(/詩\s*(\d+)\s*篇/g, (all, n) => '詩篇第' + n + '篇');
+  return t;
+}
 // 依標點切句，每段 100–300 字：唸起來自然，請求也不會太碎
 function rvChunks(text){
   const t = String(text||'').replace(/\s+/g,' ').trim(); if (!t) return [];
@@ -1277,6 +1330,7 @@ let speaking = false;
 function speakMark(on){ speaking = on; $('#speak').classList.toggle('on', on); }
 function say(text){
   if (!text || !text.trim()) return;
+  text = refsForSpeech(text);
   rvStop(); speakMark(true);
   if (rvOn()) return rvSpeak(text, () => speakMark(false));
   if (!('speechSynthesis' in window)){ speakMark(false); return alert('這台裝置不支援朗讀。'); }
@@ -1672,21 +1726,70 @@ function aiSystem(){
 }
 function aiOpen(pre){
   if (!aiOn()) return toast('AI 尚未設定');
+  AI.fav = false;
   $('#ai').classList.add('on');
   $('#aictx').textContent = CUR.lesson ? '第' + meta(CUR.lesson).number + '課' : '';
   aiRender();
   if (pre){ $('#aiin').value = ''; aiSend(pre); }
 }
 function askAI(q){ aiOpen(q); }
-function aiRender(){
+
+/* ----- 每則回答的四個動作：朗讀／收合／收藏／刪除 ----- */
+const FOLD = new Set();
+const favs = () => (S.favs = Array.isArray(S.favs) ? S.favs : []);
+const isFav = t => favs().some(f => f.t === t);
+function aiFold(i){ FOLD.has(i) ? FOLD.delete(i) : FOLD.add(i); aiRender(true); }
+function aiFav(i){
+  const m = AI.msgs[i]; if (!m) return;
+  const L = favs(), k = L.findIndex(f => f.t === m.text);
+  if (k >= 0){ L.splice(k,1); save(); aiRender(true); return toast('已取消收藏'); }
+  L.unshift({ t:m.text, at:Date.now(), ctx: CUR.lesson ? '第' + meta(CUR.lesson).number + '課' : '' });
+  if (L.length > 200) L.length = 200;
+  save(); aiRender(true); toast('已收藏');
+}
+function aiDel(i){
+  if (!AI.msgs[i]) return;
+  AI.msgs.splice(i, 1); FOLD.clear(); aiRender(true); toast('已刪除');
+}
+function aiFavDel(i){ favs().splice(i,1); save(); aiRender(true); toast('已刪除'); }
+function aiFavView(on){ AI.fav = !!on; aiRender(); }
+
+function aiRender(keep){
   const box = $('#aimsgs');
-  box.innerHTML = AI.msgs.length ? AI.msgs.map((m, i) =>
-    `<div class="m ${m.role === 'user' ? 'u' : 'a'}"><span>${esc(m.text).replace(/\n/g,'<br>')}
-      ${m.role === 'assistant' ? `<br><button class="spk" onclick="say(${jsq(m.text)})">朗讀</button>` : ''}
-    </span></div>`).join('')
+  const top = keep ? box.scrollTop : null;
+
+  if (AI.fav){
+    const L = favs();
+    box.innerHTML = `<div style="display:flex;align-items:center;gap:12px;margin:0 0 14px">
+        <b style="font-family:var(--serif);font-size:.9em;flex:1">我的收藏　${L.length}</b>
+        <button style="font-size:.62em;color:var(--p1)" onclick="aiFavView(0)">‹ 回到對話</button></div>` +
+      (L.length ? L.map((f,i) => `<div class="favcard">
+          <p class="fh">${f.ctx ? esc(f.ctx) + '　·　' : ''}${new Date(f.at).toLocaleDateString('zh-TW')}</p>
+          <div class="fb">${esc(f.t).replace(/\n/g,'<br>')}</div>
+          <div class="mact">
+            <button onclick="say(${jsq(f.t)})">🔊 朗讀</button>
+            <button class="mut" onclick="aiFavDel(${i})">🗑 刪除</button></div></div>`).join('')
+        : `<p class="muted" style="font-size:.8em">還沒有收藏。在小智的回答下方按「☆ 收藏」，就會留在這裡。</p>`);
+    box.scrollTop = keep ? top : 0;
+    $('#aiquick').innerHTML = '';
+    return;
+  }
+
+  box.innerHTML = AI.msgs.length ? AI.msgs.map((m, i) => {
+    if (m.role === 'user') return `<div class="m u"><span>${esc(m.text).replace(/\n/g,'<br>')}</span></div>`;
+    const folded = FOLD.has(i), fav = isFav(m.text);
+    return `<div class="m a"><span>
+      <span class="tx${folded ? ' fold' : ''}">${esc(m.text).replace(/\n/g,'<br>')}</span>
+      <span class="mact">
+        <button onclick="say(${jsq(m.text)})">🔊 朗讀</button>
+        <button class="mut" onclick="aiFold(${i})">${folded ? '▾ 展開' : '▴ 收合'}</button>
+        <button class="${fav ? '' : 'mut'}" onclick="aiFav(${i})">${fav ? '★ 已收藏' : '☆ 收藏'}</button>
+        <button class="mut" onclick="aiDel(${i})">🗑 刪除</button>
+      </span></span></div>`;
+  }).join('')
     : `<div class="m a"><span>平安！我是小智，你的 AI 屬靈小幫手。<br><br>你可以問我這一課的內容，或任何關於聖經與 321 的問題。<br><br>我會告訴你答案的依據在哪一課、哪一節經文，也會標明那是聖經明說的，還是我們的整理。</span></div>`;
   if (AI.busy) box.insertAdjacentHTML('beforeend', '<div class="m a"><span>小智正在想…</span></div>');
-  box.scrollTop = box.scrollHeight;
+  box.scrollTop = keep ? top : box.scrollHeight;
   $('#aiquick').innerHTML = aiQuicks().map(q =>
     `<button onclick="aiSend(${jsq(q)})">${esc(q)}</button>`).join('');
 }
@@ -1719,7 +1822,8 @@ async function aiSend(text){
 }
 $('#aibtn').onclick   = () => aiOpen();
 $('#aiclose').onclick = () => $('#ai').classList.remove('on');
-$('#aiclear').onclick = () => { AI.msgs = []; aiRender(); };
+$('#aiclear').onclick = () => { AI.msgs = []; FOLD.clear(); AI.fav = false; aiRender(); };
+$('#aifav').onclick   = () => aiFavView(!AI.fav);
 $('#aisend').onclick  = () => aiSend();
 $('#aiin').onkeydown  = e => { if (e.key === 'Enter') aiSend(); };
 $('#ai').onclick = e => { if (e.target.id === 'ai') $('#ai').classList.remove('on'); };
@@ -1740,6 +1844,8 @@ window.openDiag = openDiag; window.openRev = openRev; window.setFS = setFS;
 window.exportData = exportData; window.startLive = startLive; window.$ = $;
 window.makeImage = makeImage; window.told = told; window.vMemory = vMemory;
 window.say = say; window.askAI = askAI; window.aiSend = aiSend; window.aiOpen = aiOpen;
+window.aiFold = aiFold; window.aiFav = aiFav; window.aiDel = aiDel;
+window.aiFavDel = aiFavDel; window.aiFavView = aiFavView;
 window.markMenu = markMenu; window.markSave = markSave; window.markDel = markDel;
 window.recStart = recStart; window.recStop = recStop; window.recPlay = recPlay; window.recDel = recDel;
 window.setVoice = setVoice; window.setRate = setRate; window.clearVoiceCache = clearVoiceCache;
