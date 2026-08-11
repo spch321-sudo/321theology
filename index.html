@@ -765,7 +765,7 @@ function saveNote(id){ S.notes[id] = $('#note').value; save(); toast('筆記已�
 /* ===== 步驟 ===== */
 function toggleStep(id, i){
   const p = prog(id);
-  if (p.steps.includes(i)){ p.steps = p.steps.filter(x => x !== i); save(); return renderLesson(CACHE[id]); }
+  if (p.steps.includes(i)){ p.steps = p.steps.filter(x => x !== i); save(); return rerenderKeepScroll(); }
   const need = NEEDS_INPUT[i];
   if (need){
     const q = { practice:'第4步 實踐｜你這週要做的一件事是什麼？',
@@ -778,7 +778,7 @@ function toggleStep(id, i){
   }
   p.steps = [...new Set([...p.steps, i])].sort((a,b)=>a-b);
   if (i === 2 && meta(id).memoryVerse) memAdd(id, true);
-  save(); renderLesson(CACHE[id]);
+  save(); rerenderKeepScroll();
   if (p.steps.length === 8) setTimeout(() => alert('八步走完了。\n\n你不只讀完，你把它傳了下去。\n願一切榮耀歸給神。'), 250);
 }
 
@@ -1658,6 +1658,18 @@ function wrapSentences(){
     });
   });
 }
+/* 重畫課文但停在原位：保留捲動位置與展開中的區塊 */
+function rerenderKeepScroll(){
+  const L = CACHE[CUR.lesson]; if (!L) return;
+  const body = $('#lbody');
+  const open = body ? [...body.querySelectorAll('details')].map(x => x.open) : [];
+  const y = window.scrollY || window.pageYOffset || 0;
+  renderLesson(L);
+  const ds = $('#lbody') ? $('#lbody').querySelectorAll('details') : [];
+  open.forEach((o, i) => { if (ds[i]) ds[i].open = o; });
+  window.scrollTo(0, y);
+  requestAnimationFrame(() => window.scrollTo(0, y));
+}
 function tapSentence(q){
   const t = String(q || '').replace(/\s+/g, ' ').trim();
   if (t.length < 2) return;
@@ -1665,7 +1677,7 @@ function tapSentence(q){
   const i = ms.findIndex(m => (m.f || flatten(m.q)) === f);
   if (i >= 0) return markMenu(i);                 // 已畫線 → 打開筆記
   ms.push({ q: t.slice(0,300), f, note:'', t: Date.now() }); save();
-  renderLesson(CACHE[CUR.lesson]);
+  rerenderKeepScroll();
   toast('已畫線　·　再點一下可寫筆記');
 }
 const noteKey = m => CUR.lesson + '|' + (m.f || flatten(m.q)).slice(0, 40);
@@ -1735,18 +1747,18 @@ function markMenu(i){
 function noteClear(i){
   const m = marks(CUR.lesson)[i]; if (!m) return;
   m.note = ''; save();
-  $('#sheet').classList.remove('on'); renderLesson(CACHE[CUR.lesson]); toast('已刪除領受，畫線還在');
+  $('#sheet').classList.remove('on'); rerenderKeepScroll(); toast('已刪除領受，畫線還在');
 }
 function markSave(i){
   const m = marks(CUR.lesson)[i]; if (!m) return;
   m.note = $('#mknote').value.trim();
   S.noteOpen = S.noteOpen || {}; delete S.noteOpen[noteKey(m)];   // 剛寫完先展開
   save();
-  $('#sheet').classList.remove('on'); renderLesson(CACHE[CUR.lesson]); toast('已存');
+  $('#sheet').classList.remove('on'); rerenderKeepScroll(); toast('已存');
 }
 function markDel(i){
   marks(CUR.lesson).splice(i, 1); save();
-  $('#sheet').classList.remove('on'); renderLesson(CACHE[CUR.lesson]); toast('已刪除');
+  $('#sheet').classList.remove('on'); rerenderKeepScroll(); toast('已刪除');
 }
 function addMark(q, withNote){
   q = q.replace(/\s+/g, ' ').trim();
@@ -1756,7 +1768,7 @@ function addMark(q, withNote){
   if (ms.some(m => (m.f || flatten(m.q)) === f)) return toast('這一段已經畫過線了');
   ms.push({ q, f, note:'', t: Date.now() }); save();
   clearSel();
-  if (CACHE[CUR.lesson]) renderLesson(CACHE[CUR.lesson]);
+  if (CACHE[CUR.lesson]) rerenderKeepScroll();
   if (withNote) setTimeout(() => markMenu(ms.length - 1), 120);
   else toast('已畫線');
 }
