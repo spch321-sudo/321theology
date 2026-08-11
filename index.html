@@ -82,17 +82,20 @@ button.partbar .pcount{margin-left:auto;font-size:.68em;color:var(--ink3);white-
 button.partbar .pchev{font-size:.72em;color:var(--ink3);margin-left:6px}
 .body .ms{border-radius:4px;-webkit-tap-highlight-color:transparent}
 .body .ms:active{background:rgba(13,57,136,.09)}
-.body .mknote{font-size:.78em;line-height:1.75;color:var(--ink2);background:#F2EFE7;
-  border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:8px 12px;margin:6px 0 14px;cursor:pointer}
-.body .mknote b{color:var(--accent);font-size:1em;letter-spacing:.06em}
-.body .mknote{padding:0;overflow:hidden}
-.body .mknote .mkfold{display:flex;align-items:center;gap:8px;width:100%;border:0;background:none;
-  font:inherit;font-size:.78em;color:var(--accent);letter-spacing:.06em;text-align:left;
-  padding:9px 12px;cursor:pointer;-webkit-tap-highlight-color:transparent}
-.body .mknote .mkfold .cv{font-size:.9em;width:12px;display:inline-block}
-.body .mknote .mkfold .hint{margin-left:auto;font-size:.86em;color:var(--ink3);font-weight:400;letter-spacing:0}
-.body .mknote .mktx{padding:0 12px 11px;cursor:pointer}
-.body .mknote.closed{opacity:.85}
+/* 畫線旁的小旗標：點一下開合那一則領受 */
+.body .mkflag{display:inline-block;color:var(--accent);font-size:.66em;line-height:1;margin:0 4px;
+  vertical-align:.12em;cursor:pointer;opacity:.75;-webkit-tap-highlight-color:transparent;
+  transition:opacity .15s,transform .15s}
+.body .mkflag.on{opacity:1}
+.body .mkflag:active{transform:scale(.85)}
+/* 領受本體：以 grid 高度動畫平順開合 */
+.body .mknote{display:grid;grid-template-rows:0fr;margin:0;opacity:0;
+  transition:grid-template-rows .26s ease,margin .26s ease,opacity .2s ease}
+.body .mknote.open{grid-template-rows:1fr;margin:8px 0 14px;opacity:1}
+.body .mknote .mkin{overflow:hidden;min-height:0;font-size:.78em;line-height:1.8;color:var(--ink2);
+  background:#F2EFE7;border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:0 12px;cursor:pointer}
+.body .mknote.open .mkin{padding:9px 12px}
+.body .mknote b{color:var(--accent);letter-spacing:.06em}
 .mkhead{display:flex;align-items:center;gap:8px;font-family:var(--serif);font-weight:700;
   font-size:1.02em;color:var(--accent);margin:0 0 12px}
 .mkquote{font-size:.92em;line-height:1.9;margin:0 0 4px}
@@ -231,7 +234,7 @@ textarea,input[type=text]{width:100%;font:inherit;font-size:.85em;padding:12px 1
 mark.hl{background:linear-gradient(transparent 58%,rgba(201,162,39,.42) 58%);color:inherit;
   padding:0 1px;border-radius:2px;cursor:pointer}
 mark.hl.n{background:linear-gradient(transparent 58%,rgba(90,140,200,.38) 58%)}
-mark.hl.n::after{content:"✎";font-size:.62em;color:var(--p1);vertical-align:super;margin-left:2px}
+mark.hl.n{background:linear-gradient(transparent 58%,rgba(90,140,200,.38) 58%)}
 #selbar{position:fixed;z-index:70;display:none;background:#20242B;border-radius:14px;padding:6px;
   box-shadow:0 8px 24px rgba(0,0,0,.28);gap:2px}
 #selbar.on{display:flex}
@@ -1685,31 +1688,49 @@ function tapSentence(q){
   toast('已畫線　·　再點一下可寫筆記');
 }
 const noteKey = m => CUR.lesson + '|' + (m.f || flatten(m.q)).slice(0, 40);
-const noteOpen = m => (S.noteOpen || {})[noteKey(m)] !== false;   // 預設展開
+const noteOpen = m => (S.noteOpen || {})[noteKey(m)] === true;   // 預設收合
 function toggleNote(i){
   const m = marks(CUR.lesson)[i]; if (!m) return;
   S.noteOpen = S.noteOpen || {};
-  S.noteOpen[noteKey(m)] = !noteOpen(m); save(); showNotes();
+  const open = !noteOpen(m);
+  S.noteOpen[noteKey(m)] = open; save();
+  const note = document.getElementById('mknote-' + i), flag = document.getElementById('mkflag-' + i);
+  if (note && flag){                       // 只開合這一則，不重繪整課
+    note.classList.toggle('open', open);
+    flag.classList.toggle('on', open);
+    flag.textContent = open ? '▼' : '▶';
+    flag.setAttribute('aria-expanded', open ? 'true' : 'false');
+    return;
+  }
+  showNotes();
 }
 function showNotes(){
   const root = $('#lbody'); if (!root) return;
-  root.querySelectorAll('.mknote').forEach(n => n.remove());
+  root.querySelectorAll('.mknote, .mkflag').forEach(n => n.remove());
   (S.marks[CUR.lesson] || []).forEach((m, i) => {
     if (!m.note) return;
-    const mk = root.querySelector('mark[data-i="' + i + '"]'); if (!mk) return;
+    const mks = root.querySelectorAll('mark[data-i="' + i + '"]');
+    if (!mks.length) return;
+    const mk = mks[mks.length - 1], open = noteOpen(m);
+
+    const flag = document.createElement('span');
+    flag.className = 'mkflag' + (open ? ' on' : '');
+    flag.id = 'mkflag-' + i;
+    flag.setAttribute('role', 'button');
+    flag.setAttribute('aria-label', '領受筆記');
+    flag.setAttribute('aria-expanded', open ? 'true' : 'false');
+    flag.textContent = open ? '▼' : '▶';
+    flag.onclick = ev => { ev.stopPropagation(); toggleNote(i); };
+    mk.parentNode.insertBefore(flag, mk.nextSibling);
+
+    const box = document.createElement('div');
+    box.className = 'mknote' + (open ? ' open' : '');
+    box.id = 'mknote-' + i;
+    box.innerHTML = '<div class="mkin"><b>領受：</b>' + esc(m.note).replace(/\n/g, '<br>') + '</div>';
+    box.onclick = ev => { ev.stopPropagation(); markMenu(i); };
     const blk = mk.closest('p,li,h4,td,pre') || mk.parentNode;
-    const open = noteOpen(m);
-    const d = document.createElement('div');
-    d.className = 'mknote' + (open ? '' : ' closed');
-    d.innerHTML = '<button class="mkfold"><span class="cv">' + (open ? '▾' : '▸') + '</span>'
-      + '<b>我的領受</b><span class="hint">' + (open ? '收合' : '展開') + '</span></button>'
-      + (open ? '<div class="mktx">' + esc(m.note).replace(/\n/g, '<br>') + '</div>' : '');
-    d.querySelector('.mkfold').onclick = ev => { ev.stopPropagation(); ev.preventDefault(); toggleNote(i); };
-    const tx = d.querySelector('.mktx');
-    if (tx) tx.onclick = ev => { ev.stopPropagation(); markMenu(i); };
-    d.onclick = ev => ev.stopPropagation();
-    if (/^(LI|TD|TH)$/.test(blk.tagName)) blk.appendChild(d);
-    else blk.parentNode.insertBefore(d, blk.nextSibling);
+    if (/^(LI|TD|TH)$/.test(blk.tagName)) blk.appendChild(box);
+    else blk.parentNode.insertBefore(box, blk.nextSibling);
   });
 }
 function applyMarks(){
@@ -1757,7 +1778,7 @@ function noteClear(i){
 function markSave(i){
   const m = marks(CUR.lesson)[i]; if (!m) return;
   m.note = $('#mknote').value.trim();
-  S.noteOpen = S.noteOpen || {}; delete S.noteOpen[noteKey(m)];   // 剛寫完先展開
+  S.noteOpen = S.noteOpen || {}; S.noteOpen[noteKey(m)] = true;   // 剛寫完先展開
   save();
   $('#sheet').classList.remove('on'); rerenderKeepScroll(); toast('已存');
 }
