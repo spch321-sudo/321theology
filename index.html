@@ -85,6 +85,20 @@ button.partbar .pchev{font-size:.72em;color:var(--ink3);margin-left:6px}
 .body .mknote{font-size:.78em;line-height:1.75;color:var(--ink2);background:#F2EFE7;
   border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:8px 12px;margin:6px 0 14px;cursor:pointer}
 .body .mknote b{color:var(--accent);font-size:.92em;margin-right:8px;letter-spacing:.06em}
+.body .mknote .mkfold{border:0;background:none;font-size:.9em;color:var(--accent);
+  padding:0 8px 0 0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.body .mknote.closed{padding:5px 12px;color:var(--ink3);font-size:.72em}
+.body .mknote.closed b{color:var(--ink3)}
+.mkhead{display:flex;align-items:center;gap:8px;font-family:var(--serif);font-weight:700;
+  font-size:1.02em;color:var(--accent);margin:0 0 12px}
+.mkquote{font-size:.92em;line-height:1.9;margin:0 0 4px}
+.mkquote span{background:linear-gradient(transparent 58%,rgba(201,162,39,.42) 58%)}
+.mkspeak{border:0;background:none;color:var(--p1);font-size:.68em;letter-spacing:.06em;
+  padding:6px 0 12px;cursor:pointer}
+.btn.wide{flex:1 1 60%}
+.btn.warn{color:#8B5E1A;border-color:#E6D6AE;background:#FBF6E9}
+.btn.dang{color:#9B3B46;border-color:#EBCBD0;background:#FDF4F5}
+.btn.sm{flex:1 1 28%;padding:11px 10px;font-size:.68em;text-align:center}
 .row{display:flex;gap:14px;align-items:center;background:var(--card);border:1px solid var(--line);
   border-radius:16px;padding:14px 16px;margin-bottom:10px;width:100%;text-align:left}
 .row .num{font-family:var(--serif);font-size:1.15em;font-weight:700;color:var(--accent);
@@ -400,11 +414,12 @@ const idbKeys = st => db().then(d => new Promise(res => {
 /* ===== 儲存 ===== */
 const KEY = 'g321theo';
 const DEF = { settings:{ fs:1, depth:'core8', voice:'yunjhe', rate:1 },
-  progress:{}, notes:{}, marks:{}, last:null, memory:{}, favs:[], foldParts:{} };
+  progress:{}, notes:{}, marks:{}, last:null, memory:{}, favs:[], foldParts:{}, noteOpen:{} };
 let S = (() => { try { const o = Object.assign({}, DEF, JSON.parse(localStorage.getItem(KEY) || '{}'));
     o.settings = Object.assign({}, DEF.settings, o.settings || {}); o.marks = o.marks || {};
     if (!Array.isArray(o.favs)) o.favs = [];
-    if (!o.foldParts || typeof o.foldParts !== 'object') o.foldParts = {}; return o; } catch(e){ return JSON.parse(JSON.stringify(DEF)); } })();
+    if (!o.foldParts || typeof o.foldParts !== 'object') o.foldParts = {};
+    if (!o.noteOpen || typeof o.noteOpen !== 'object') o.noteOpen = {}; return o; } catch(e){ return JSON.parse(JSON.stringify(DEF)); } })();
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} };
 const prog = id => (S.progress[id] = S.progress[id] || { steps:[], practice:'', review:'', who:'', whoAt:0, told:0, nudge:0 });
 const DAY = 864e5;
@@ -704,7 +719,7 @@ function renderLesson(L){
 
   // 我畫的線
   const ms = S.marks[L.id] || [];
-  h += `<div class="card"><p class="eyebrow">我畫的線 · ${ms.length}</p>`;
+  h += `<div class="card"><p class="eyebrow">我畫的線與領受 · ${ms.length}</p>`;
   h += ms.length
     ? ms.map((m,i) => `<p style="margin:0 0 12px;font-size:.82em;line-height:1.75;cursor:pointer" onclick="markMenu(${i})">
         <span style="background:linear-gradient(transparent 58%,rgba(201,162,39,.42) 58%)">${esc(m.q.slice(0,70))}${m.q.length>70?'…':''}</span>
@@ -1653,6 +1668,13 @@ function tapSentence(q){
   renderLesson(CACHE[CUR.lesson]);
   toast('已畫線　·　再點一下可寫筆記');
 }
+const noteKey = m => CUR.lesson + '|' + (m.f || flatten(m.q)).slice(0, 40);
+const noteOpen = m => (S.noteOpen || {})[noteKey(m)] !== false;   // 預設展開
+function toggleNote(i){
+  const m = marks(CUR.lesson)[i]; if (!m) return;
+  S.noteOpen = S.noteOpen || {};
+  S.noteOpen[noteKey(m)] = !noteOpen(m); save(); showNotes();
+}
 function showNotes(){
   const root = $('#lbody'); if (!root) return;
   root.querySelectorAll('.mknote').forEach(n => n.remove());
@@ -1660,10 +1682,15 @@ function showNotes(){
     if (!m.note) return;
     const mk = root.querySelector('mark[data-i="' + i + '"]'); if (!mk) return;
     const blk = mk.closest('p,li,h4,td,pre') || mk.parentNode;
+    const open = noteOpen(m);
     const d = document.createElement('div');
-    d.className = 'mknote';
-    d.innerHTML = '<b>我的筆記</b>' + esc(m.note).replace(/\n/g, '<br>');
-    d.onclick = ev => { ev.stopPropagation(); markMenu(i); };
+    d.className = 'mknote' + (open ? '' : ' closed');
+    d.innerHTML = '<button class="mkfold" aria-label="收合筆記">' + (open ? '▾' : '▸') + '</button>'
+      + '<b>我的領受</b>'
+      + (open ? '<span class="mktx">' + esc(m.note).replace(/\n/g, '<br>') + '</span>'
+              : '<span class="mktx">' + esc(m.note.replace(/\s+/g, ' ').slice(0, 12)) + (m.note.length > 12 ? '…' : '') + '</span>');
+    d.querySelector('.mkfold').onclick = ev => { ev.stopPropagation(); toggleNote(i); };
+    d.onclick = ev => { ev.stopPropagation(); open ? markMenu(i) : toggleNote(i); };
     if (/^(LI|TD|TH)$/.test(blk.tagName)) blk.appendChild(d);
     else blk.parentNode.insertBefore(d, blk.nextSibling);
   });
@@ -1689,19 +1716,32 @@ function applyMarks(){
 }
 function markMenu(i){
   const m = marks(CUR.lesson)[i]; if (!m) return;
-  sheet(`<p class="eyebrow">我畫的線</p>
-    <div class="card" style="background:#F6F3EC"><p style="margin:0;font-size:.9em;line-height:1.8">${esc(m.q)}</p></div>
-    <p class="eyebrow">我的註記</p>
-    <textarea id="mknote" rows="4" placeholder="寫下你在這裡看見的…">${esc(m.note || '')}</textarea>
+  sheet(`<p class="mkhead">✍️ 寫下你的領受</p>
+    <p class="mkquote"><span>${esc(m.q)}</span></p>
+    <button class="mkspeak" onclick="say(${jsq(m.q)})">🔊 朗讀這一句</button>
+    <textarea id="mknote" rows="5" placeholder="這句話帶給你什麼領受、感動，或聖靈的提醒？寫下來，把焦點對準耶穌……">${esc(m.note || '')}</textarea>
     <div class="btnrow">
-      <button class="btn pri" onclick="markSave(${i})">存起來</button>
-      <button class="btn" onclick="say(${jsq(m.q)})">朗讀這段</button>
-      <button class="btn" onclick="$('#sheet').classList.remove('on');askAI('請解釋這一段：' + ${jsq(m.q)})">問小智</button>
-      <button class="btn" onclick="markDel(${i})">刪除</button></div>`);
+      <button class="btn pri wide" onclick="markSave(${i})">儲存領受</button>
+      <button class="btn" onclick="$('#sheet').classList.remove('on');askAI('請解釋這一段：' + ${jsq(m.q)})">✨ 問小智</button>
+    </div>
+    <div class="btnrow">
+      <button class="btn warn sm" onclick="noteClear(${i})">刪除領受</button>
+      <button class="btn dang sm" onclick="markDel(${i})">移除畫線</button>
+      <button class="btn sm" onclick="$('#sheet').classList.remove('on')">取消</button>
+    </div>`);
+  setTimeout(() => { const t = $('#mknote'); if (t){ t.focus();
+    try { t.setSelectionRange(t.value.length, t.value.length); } catch(e){} } }, 80);
+}
+function noteClear(i){
+  const m = marks(CUR.lesson)[i]; if (!m) return;
+  m.note = ''; save();
+  $('#sheet').classList.remove('on'); renderLesson(CACHE[CUR.lesson]); toast('已刪除領受，畫線還在');
 }
 function markSave(i){
   const m = marks(CUR.lesson)[i]; if (!m) return;
-  m.note = $('#mknote').value.trim(); save();
+  m.note = $('#mknote').value.trim();
+  S.noteOpen = S.noteOpen || {}; delete S.noteOpen[noteKey(m)];   // 剛寫完先展開
+  save();
   $('#sheet').classList.remove('on'); renderLesson(CACHE[CUR.lesson]); toast('已存');
 }
 function markDel(i){
@@ -1968,7 +2008,7 @@ window.openDiag = openDiag; window.openRev = openRev; window.setFS = setFS;
 window.exportData = exportData; window.startLive = startLive; window.$ = $;
 window.makeImage = makeImage; window.told = told; window.vMemory = vMemory;
 window.say = say; window.askAI = askAI; window.aiSend = aiSend; window.aiOpen = aiOpen;
-window.togglePart = togglePart; window.tapSentence = tapSentence;
+window.togglePart = togglePart; window.tapSentence = tapSentence; window.toggleNote = toggleNote; window.noteClear = noteClear;
 window.aiFold = aiFold; window.aiFav = aiFav; window.aiDel = aiDel;
 window.aiFavDel = aiFavDel; window.aiFavView = aiFavView;
 window.markMenu = markMenu; window.markSave = markSave; window.markDel = markDel;
