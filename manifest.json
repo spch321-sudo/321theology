@@ -1,13 +1,13 @@
 {
-  "name": "321系統神學",
+  "name": "321神學學神",
   "short_name": "321神學",
-  "description": "三部十九課系統神學裝備。離線可用，長輩友善。",
+  "description": "系統神學裝備：三部十九課，神學全圖十九部，二十五個華人處境範疇。離線可用。",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#174238",
-  "theme_color": "#174238",
+  "background_color": "#0D3988",
+  "theme_color": "#0D3988",
   "lang": "zh-Hant",
   "icons": [
     {
