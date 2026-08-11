@@ -336,6 +336,8 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:26px 0}
 const $ = s => document.querySelector(s);
 const el = (h) => { const d = document.createElement('div'); d.innerHTML = h.trim(); return d.firstChild; };
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+/* 供 inline onclick 使用：先轉成 JS 字面值，再把引號轉成 HTML 實體，避免屬性被提早截斷 */
+const jsq = s => esc(JSON.stringify(String(s == null ? '' : s)));
 
 /* ===== 設定 ===== */
 const CFG = {
@@ -928,7 +930,7 @@ function openLoci(n){
         `<button class="row" onclick="$('#sheet').classList.remove('on');openLesson('${l.id}')">
           <span class="num">${l.number}</span><span class="t"><b>${esc(l.title)}</b></span></button>`).join('')
       : `<p class="muted">這一部尚未開課。你可以先問小智，讓他用聖經帶你走一遍。</p>`}
-    <div class="btnrow"><button class="btn pri" onclick="$('#sheet').classList.remove('on');askAI(${JSON.stringify(JSON.stringify(x.q))})">問小智</button></div>`);
+    <div class="btnrow"><button class="btn pri" onclick="$('#sheet').classList.remove('on');askAI(${jsq(x.q)})">問小智</button></div>`);
 }
 
 /* ===== 二十五個範疇 ===== */
@@ -956,8 +958,8 @@ function openTopic(i){
     <div class="card" style="background:#F2EFE7"><p class="eyebrow">最值得問的一個問題</p>
       <p style="margin:0;font-family:var(--serif);font-size:1.02em;line-height:1.85">${esc(x.q)}</p></div>
     <div class="btnrow">
-      <button class="btn pri" onclick="$('#sheet').classList.remove('on');askAI(${JSON.stringify(JSON.stringify(x.q))})">問小智</button>
-      <button class="btn" onclick="say(${JSON.stringify(JSON.stringify(x.q))})">朗讀</button></div>
+      <button class="btn pri" onclick="$('#sheet').classList.remove('on');askAI(${jsq(x.q)})">問小智</button>
+      <button class="btn" onclick="say(${jsq(x.q)})">朗讀</button></div>
     <p class="muted" style="margin-top:16px">小智會告訴你依據在哪一節經文，也會標明那是聖經明說的、
       神學的整理，還是 321 的應用語言。若有不同立場，他會公平呈現，讓你自己在聖經面前判斷。</p>`);
 }
@@ -1515,8 +1517,8 @@ function markMenu(i){
     <textarea id="mknote" rows="4" placeholder="寫下你在這裡看見的…">${esc(m.note || '')}</textarea>
     <div class="btnrow">
       <button class="btn pri" onclick="markSave(${i})">存起來</button>
-      <button class="btn" onclick="say(${JSON.stringify(JSON.stringify(m.q))})">朗讀這段</button>
-      <button class="btn" onclick="$('#sheet').classList.remove('on');askAI('請解釋這一段：' + ${JSON.stringify(JSON.stringify(m.q))})">問小智</button>
+      <button class="btn" onclick="say(${jsq(m.q)})">朗讀這段</button>
+      <button class="btn" onclick="$('#sheet').classList.remove('on');askAI('請解釋這一段：' + ${jsq(m.q)})">問小智</button>
       <button class="btn" onclick="markDel(${i})">刪除</button></div>`);
 }
 function markSave(i){
@@ -1680,13 +1682,13 @@ function aiRender(){
   const box = $('#aimsgs');
   box.innerHTML = AI.msgs.length ? AI.msgs.map((m, i) =>
     `<div class="m ${m.role === 'user' ? 'u' : 'a'}"><span>${esc(m.text).replace(/\n/g,'<br>')}
-      ${m.role === 'assistant' ? `<br><button class="spk" onclick="say(${JSON.stringify(JSON.stringify(m.text))})">朗讀</button>` : ''}
+      ${m.role === 'assistant' ? `<br><button class="spk" onclick="say(${jsq(m.text)})">朗讀</button>` : ''}
     </span></div>`).join('')
     : `<div class="m a"><span>平安！我是小智，你的 AI 屬靈小幫手。<br><br>你可以問我這一課的內容，或任何關於聖經與 321 的問題。<br><br>我會告訴你答案的依據在哪一課、哪一節經文，也會標明那是聖經明說的，還是我們的整理。</span></div>`;
   if (AI.busy) box.insertAdjacentHTML('beforeend', '<div class="m a"><span>小智正在想…</span></div>');
   box.scrollTop = box.scrollHeight;
   $('#aiquick').innerHTML = aiQuicks().map(q =>
-    `<button onclick="aiSend(${JSON.stringify(JSON.stringify(q))})">${esc(q)}</button>`).join('');
+    `<button onclick="aiSend(${jsq(q)})">${esc(q)}</button>`).join('');
 }
 async function aiSend(text){
   const q = (text != null ? text : $('#aiin').value).trim();
