@@ -427,7 +427,20 @@ let S = (() => { try { const o = Object.assign({}, DEF, JSON.parse(localStorage.
     if (!Array.isArray(o.favs)) o.favs = [];
     if (!o.foldParts || typeof o.foldParts !== 'object') o.foldParts = {};
     if (!o.noteOpen || typeof o.noteOpen !== 'object') o.noteOpen = {}; return o; } catch(e){ return JSON.parse(JSON.stringify(DEF)); } })();
-const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} };
+const save = () => {
+  try { localStorage.setItem(KEY, JSON.stringify(S)); return true; }
+  catch(e){
+    // 空間滿了：先丟掉最舊的小智收藏再存一次，仍失敗就明說，不要讓人以為存好了
+    try {
+      if (Array.isArray(S.favs) && S.favs.length > 20){
+        S.favs = S.favs.slice(0, 20);
+        localStorage.setItem(KEY, JSON.stringify(S)); return true;
+      }
+    } catch(e2){}
+    try { toast('儲存空間不足，這筆沒存進去'); } catch(e3){}
+    return false;
+  }
+};
 const prog = id => (S.progress[id] = S.progress[id] || { steps:[], practice:'', review:'', who:'', whoAt:0, told:0, nudge:0 });
 const DAY = 864e5;
 
@@ -1752,14 +1765,19 @@ function applyMarks(){
   });
   showNotes();
 }
+var MKD = { v: '' };        // 邊打邊記（var 才能讓 inline oninput 取用），鍵盤收起也不會弄丟
+let MKLAST = 0;             // 防止 pointerdown + click 連按兩次
 function markMenu(i){
   const m = marks(CUR.lesson)[i]; if (!m) return;
+  MKD.v = m.note || '';
   sheet(`<p class="mkhead">✍️ 寫下你的領受</p>
     <p class="mkquote"><span>${esc(m.q)}</span></p>
     <button class="mkspeak" onclick="say(${jsq(m.q)})">🔊 朗讀這一句</button>
-    <textarea id="mknote" rows="5" placeholder="這句話帶給你什麼領受、感動，或聖靈的提醒？寫下來，把焦點對準耶穌……">${esc(m.note || '')}</textarea>
+    <textarea id="mknote" rows="5" oninput="MKD.v=this.value"
+      placeholder="這句話帶給你什麼領受、感動，或聖靈的提醒？寫下來，把焦點對準耶穌……">${esc(m.note || '')}</textarea>
     <div class="btnrow">
-      <button class="btn pri wide" onclick="markSave(${i})">儲存領受</button>
+      <button class="btn pri wide" onpointerdown="event.preventDefault();markSave(${i})"
+        onclick="markSave(${i})">儲存領受</button>
       <button class="btn" onclick="$('#sheet').classList.remove('on');askAI('請解釋這一段：' + ${jsq(m.q)})">✨ 問小智</button>
     </div>
     <div class="btnrow">
@@ -1767,8 +1785,6 @@ function markMenu(i){
       <button class="btn dang sm" onclick="markDel(${i})">移除畫線</button>
       <button class="btn sm" onclick="$('#sheet').classList.remove('on')">取消</button>
     </div>`);
-  setTimeout(() => { const t = $('#mknote'); if (t){ t.focus();
-    try { t.setSelectionRange(t.value.length, t.value.length); } catch(e){} } }, 80);
 }
 function noteClear(i){
   const m = marks(CUR.lesson)[i]; if (!m) return;
@@ -1776,11 +1792,14 @@ function noteClear(i){
   $('#sheet').classList.remove('on'); rerenderKeepScroll(); toast('已刪除領受，畫線還在');
 }
 function markSave(i){
+  const now = Date.now(); if (now - MKLAST < 700) return; MKLAST = now;
   const m = marks(CUR.lesson)[i]; if (!m) return;
-  m.note = $('#mknote').value.trim();
+  const box = $('#mknote');
+  m.note = String((box && box.value) || MKD.v || '').trim();
   S.noteOpen = S.noteOpen || {}; S.noteOpen[noteKey(m)] = true;   // 剛寫完先展開
-  save();
-  $('#sheet').classList.remove('on'); rerenderKeepScroll(); toast('已存');
+  const ok = save();
+  $('#sheet').classList.remove('on'); rerenderKeepScroll();
+  if (ok !== false) toast(m.note ? '領受已存' : '領受已清空');
 }
 function markDel(i){
   marks(CUR.lesson).splice(i, 1); save();
