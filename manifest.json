@@ -1,7 +1,7 @@
 {
   "name": "321神學學神",
   "short_name": "321神學",
-  "description": "系統神學裝備：三部十九課，神學全圖十九部，二十五個華人處境範疇。離線可用。",
+  "description": "系統神學裝備：四部二十五課，神學全圖十九部，二十五個華人處境範疇。離線可用。",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
