@@ -84,11 +84,15 @@ button.partbar .pchev{font-size:.72em;color:var(--ink3);margin-left:6px}
 .body .ms:active{background:rgba(13,57,136,.09)}
 .body .mknote{font-size:.78em;line-height:1.75;color:var(--ink2);background:#F2EFE7;
   border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:8px 12px;margin:6px 0 14px;cursor:pointer}
-.body .mknote b{color:var(--accent);font-size:.92em;margin-right:8px;letter-spacing:.06em}
-.body .mknote .mkfold{border:0;background:none;font-size:.9em;color:var(--accent);
-  padding:0 8px 0 0;cursor:pointer;-webkit-tap-highlight-color:transparent}
-.body .mknote.closed{padding:5px 12px;color:var(--ink3);font-size:.72em}
-.body .mknote.closed b{color:var(--ink3)}
+.body .mknote b{color:var(--accent);font-size:1em;letter-spacing:.06em}
+.body .mknote{padding:0;overflow:hidden}
+.body .mknote .mkfold{display:flex;align-items:center;gap:8px;width:100%;border:0;background:none;
+  font:inherit;font-size:.78em;color:var(--accent);letter-spacing:.06em;text-align:left;
+  padding:9px 12px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.body .mknote .mkfold .cv{font-size:.9em;width:12px;display:inline-block}
+.body .mknote .mkfold .hint{margin-left:auto;font-size:.86em;color:var(--ink3);font-weight:400;letter-spacing:0}
+.body .mknote .mktx{padding:0 12px 11px;cursor:pointer}
+.body .mknote.closed{opacity:.85}
 .mkhead{display:flex;align-items:center;gap:8px;font-family:var(--serif);font-weight:700;
   font-size:1.02em;color:var(--accent);margin:0 0 12px}
 .mkquote{font-size:.92em;line-height:1.9;margin:0 0 4px}
@@ -1697,12 +1701,13 @@ function showNotes(){
     const open = noteOpen(m);
     const d = document.createElement('div');
     d.className = 'mknote' + (open ? '' : ' closed');
-    d.innerHTML = '<button class="mkfold" aria-label="收合筆記">' + (open ? '▾' : '▸') + '</button>'
-      + '<b>我的領受</b>'
-      + (open ? '<span class="mktx">' + esc(m.note).replace(/\n/g, '<br>') + '</span>'
-              : '<span class="mktx">' + esc(m.note.replace(/\s+/g, ' ').slice(0, 12)) + (m.note.length > 12 ? '…' : '') + '</span>');
-    d.querySelector('.mkfold').onclick = ev => { ev.stopPropagation(); toggleNote(i); };
-    d.onclick = ev => { ev.stopPropagation(); open ? markMenu(i) : toggleNote(i); };
+    d.innerHTML = '<button class="mkfold"><span class="cv">' + (open ? '▾' : '▸') + '</span>'
+      + '<b>我的領受</b><span class="hint">' + (open ? '收合' : '展開') + '</span></button>'
+      + (open ? '<div class="mktx">' + esc(m.note).replace(/\n/g, '<br>') + '</div>' : '');
+    d.querySelector('.mkfold').onclick = ev => { ev.stopPropagation(); ev.preventDefault(); toggleNote(i); };
+    const tx = d.querySelector('.mktx');
+    if (tx) tx.onclick = ev => { ev.stopPropagation(); markMenu(i); };
+    d.onclick = ev => ev.stopPropagation();
     if (/^(LI|TD|TH)$/.test(blk.tagName)) blk.appendChild(d);
     else blk.parentNode.insertBefore(d, blk.nextSibling);
   });
