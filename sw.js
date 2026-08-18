@@ -1,5 +1,5 @@
 /* 321系統神學 Service Worker（單檔版） */
-const CACHE_VERSION = 'g321theo-v5.1.0';
+const CACHE_VERSION = 'g321theo-v6.0.0';
 const CORE = ['./', './index.html', './manifest.json'];
 
 self.addEventListener('install', e => {
