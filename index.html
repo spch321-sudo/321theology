@@ -1914,7 +1914,8 @@ const SAYFIX = [
   [/使徒行傳/g,'使徒行撰'], [/重生/g,'崇生'], [/應許/g,'英許'],
   [/降服/g,'祥服'], [/降伏/g,'祥伏'], [/稱義/g,'撐義'], [/稱他為義/g,'撐他為義'],
   [/倒空/g,'到空'], [/看守/g,'刊守'], [/數算/g,'屬算'], [/給予/g,'己予'],
-  [/提防/g,'低防'], [/記載/g,'記宰'], [/所記載/g,'所記宰'], [/撒種/g,'撒腫']
+  [/提防/g,'低防'], [/記載/g,'記宰'], [/所記載/g,'所記宰'], [/撒種/g,'撒腫'],
+  [/(?<!不)同行/g,'同型']
 ];
 
 /* ===== 彈出層 ===== */
@@ -2100,6 +2101,65 @@ function say(text){
   u.onend = u.onerror = () => speakMark(false);
   speechSynthesis.speak(u);
 }
+/* ===== 朗讀前：把摺疊區塊（教師本區塊、想更深）也讀出來，並轉成自然口語 =====
+   innerText 只會讀「目前有展開／可見」的內容，摺疊中的 <details> 會被整段跳過——
+   這裡改成直接走訪 DOM（用 textContent，不受展開狀態影響），逐段組出口語稿。 */
+const SPK_DECOR_RE = /[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}\u{25A0}-\u{25FF}\u{FE0F}\u{200D}＋▶▼]/gu;
+function spkClean(t){
+  return String(t||'')
+    .replace(/[֐-׿Ͱ-Ͽ]+/g, '')   // 原文希伯來/希臘字母：留音譯讀一次，原文字母本身不唸
+    .replace(/（\s*[，,、]\s*/g, '（')                 // 清掉字母拿掉後留下的孤立逗號
+    .replace(/[\u{2190}-\u{21FF}]/gu, '，')            // 箭頭 → 轉成自然的停頓（逗號）
+    .replace(SPK_DECOR_RE, '')                         // 表情符號／裝飾符號
+    .replace(/[★☆✦✺]/g, '')                           // 星號
+    .replace(/[ \t]+/g, ' ')                           // 收拾符號拿掉後留下的多餘空白
+    .replace(/(，\s*){2,}/g, '，').replace(/^\s*，\s*/, '').replace(/\s*，\s*$/, '');
+}
+function spkStripRefParens(t){
+  const shortRef = '(?:' + BOOK_RE + ')\\s*\\d+\\s*[:：]\\s*\\d+(?:\\s*[-–—~～]\\s*\\d+)?(?:\\s*[,，、]\\s*\\d+(?:\\s*[-–—~～]\\s*\\d+)?)*';
+  const longRef = '(?:' + BOOK_RE + ')[一二三四五六七八九十百零]+(?:章|篇)[一二三四五六七八九十百零]+節';
+  const bareVerse = '[一二三四五六七八九十百零]+(?:\\s*(?:到|至|[-–—~～、，])\\s*[一二三四五六七八九十百零]+)*節';   // 承前省略書卷／章的純節號，如（一到六節）
+  const one = '(?:' + shortRef + '|' + longRef + '|' + bareVerse + ')';
+  const re = new RegExp('（\\s*' + one + '(?:\\s*[、，,;；]\\s*' + one + ')*\\s*）', 'g');
+  return String(t||'').replace(re, '');               // 括號裡「純粹是章節出處」的，不讀
+}
+function spkNum(t){
+  return String(t||'')
+    .replace(/^([一二三四五六七八九十百]+)、/, '第$1，')   // 一、二、三……→ 第一，第二，第三……
+    .replace(/^(\d+)\.\s*/, '第$1題，');                  // 討論題號 1. 2. …… → 第1題，第2題……
+}
+function lessonBodyToSpeech(root){
+  const out = [];
+  const pushClean = (raw, numbered) => {
+    let t = spkClean(spkStripRefParens(raw));
+    if (numbered) t = spkNum(t.trim());
+    t = t.trim();
+    if (t) out.push(t);
+  };
+  const walk = el => {
+    if (!el || el.nodeType !== 1) return;
+    if (el.tagName === 'DETAILS' && el.classList.contains('deeper')){
+      const qEl = el.querySelector('summary'), aEl = el.querySelector('.deeper-a');
+      let q = spkClean(spkStripRefParens((qEl ? qEl.textContent : '').replace(/^想更深？\s*/, '')));
+      let a = spkClean(spkStripRefParens(aEl ? aEl.textContent : ''));
+      q = q.trim(); a = a.trim();
+      if (q || a) out.push('我們再想深一點。' + q + (q && a ? '　' : '') + a);
+      return;
+    }
+    if (el.tagName === 'DETAILS' && el.classList.contains('blk')){
+      const bh = el.querySelector('.bh'), inner = el.querySelector('.inner');
+      pushClean(bh ? bh.textContent : '', false);
+      if (inner) pushClean(inner.textContent, false);
+      return;
+    }
+    if (el.tagName === 'H4'){ pushClean(el.textContent, true); return; }
+    if (el.tagName === 'HR') return;
+    if (el.tagName === 'P' || el.tagName === 'DIV'){ pushClean(el.textContent, true); return; }
+    Array.from(el.children).forEach(walk);
+  };
+  Array.from(root.children).forEach(walk);
+  return out.join('\n');
+}
 $('#speak').onclick = () => {
   if (speaking){ rvStop(); speakMark(false); return; }
   let txt;
@@ -2107,7 +2167,7 @@ $('#speak').onclick = () => {
     const v = meta(RV.q[RV.i]).memoryVerse; txt = v ? v.ref + '。' + v.text : '';
   } else {
     const src = $('#lbody') || $('#view');
-    txt = src.innerText.replace(/\s+/g,' ').slice(0, 6000);
+    txt = lessonBodyToSpeech(src);
   }
   say(txt);
 };
