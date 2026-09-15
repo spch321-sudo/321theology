@@ -324,6 +324,9 @@ mark.hl.c-maroon{background:linear-gradient(transparent 58%,var(--hl-maroon) 58%
 mark.hl.c-brown{background:linear-gradient(transparent 58%,var(--hl-brown) 58%)}
 mark.hl.c-charcoal{background:linear-gradient(transparent 58%,var(--hl-charcoal) 58%)}
 mark.hl.n{border-bottom:1.5px dotted var(--ink3)}
+/* 原文開關：關掉只是不顯示原字，音譯與編號留著，文意讀得下去 */
+html[data-orig="0"] #lbody .orig{display:none}
+#lbody .orig{font-family:var(--serif)}
 /* 色票 */
 .hlrow{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:2px 0 12px}
 .hlrow .lb{font-size:.62em;letter-spacing:.1em;color:var(--ink3);flex:0 0 auto;margin-right:2px}
@@ -523,7 +526,7 @@ const idbKeys = st => db().then(d => new Promise(res => {
 
 /* ===== 儲存 ===== */
 const KEY = 'g321theo';
-const DEF = { settings:{ fs:1, depth:'core8', voice:'yunjhe', voiceEn:'brian', rate:1, follow:1, hlc:'', lang:'zh-Hant', aiPos:null, aiHintShown:false },
+const DEF = { settings:{ fs:1, depth:'core8', voice:'yunjhe', voiceEn:'brian', rate:1, follow:1, hlc:'', orig:1, lang:'zh-Hant', aiPos:null, aiHintShown:false },
   progress:{}, notes:{}, marks:{}, last:null, memory:{}, favs:[], foldParts:{}, noteOpen:{} };
 let S = (() => { try { const o = Object.assign({}, DEF, JSON.parse(localStorage.getItem(KEY) || '{}'));
     o.settings = Object.assign({}, DEF.settings, o.settings || {}); o.marks = o.marks || {};
@@ -629,6 +632,7 @@ async function boot(){
     return;
   }
   applyFS();
+  applyOrig();
   route('today');
   try { watchLang(); } catch(e){}
   setTimeout(() => { const b = $('#boot'); if (b){ b.classList.add('off');
@@ -922,10 +926,13 @@ function renderLesson(L0){
   $('#view').innerHTML = h;
   dlRender();
   bindBody();
+  wrapOrig($('#lbody'));                          // 要在斷句之前，否則逗號會被 span.ms 隔開
   applyMarks();
   recList(L.id);
+  spkRebind();                                    // 任何重繪之後，朗讀標示都要接回去
 }
 function setDepth(d){
+  if (SPK.on) stopSpeak();                        // 換一本，內容整個不同，先停
   CUR.depth = d; S.settings.depth = d; save();
   const L = CACHE[CUR.lesson];
   if (!L) return getLesson(CUR.lesson).then(x => { renderLesson(x); window.scrollTo(0,0); });
@@ -1927,6 +1934,84 @@ function exportData(){
 
 /* ===== 字級 ===== */
 const FSV = ['20px','24px','28px','32px'];
+/* ===== 經文原文（希伯來文／希臘文）顯示開關 =====
+   原文是寫在課文裡的，不是獨立欄位，所以在畫面上把每一段原字包成 .orig 再用 CSS 收起來。
+   後面緊跟的那個逗號也一起收走，免得留下「（，yada）」這種殘句。 */
+const ORIG_CH = '\u0590-\u05FF\u0370-\u03FF\u1F00-\u1FFF';
+const ORIG_RUN = new RegExp('[' + ORIG_CH + '][' + ORIG_CH + '\\s\u0300-\u036F]*(?:\\s*[，,](?=\\s*[A-Za-z\u00C0-\u024F\u2019\']))?', 'g');
+const ORIG_HAS = new RegExp('[' + ORIG_CH + ']');
+function wrapOrig(root){
+  if (!root) return;
+  // ① <span dir="rtl"> 整個就是一段原文，先標起來（先做，才不會和下面的文字掃描疊成兩層）
+  root.querySelectorAll('[dir="rtl"]').forEach(el => {
+    if (ORIG_HAS.test(el.textContent)) el.classList.add('orig');
+  });
+  // ② 其餘散在文字裡的原文，逐個文字節點包起來
+  const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode: n => {
+      const p = n.parentNode;
+      if (!p || /^(SCRIPT|STYLE|TEXTAREA)$/.test(p.nodeName)) return NodeFilter.FILTER_REJECT;
+      if (p.closest && p.closest('.orig')) return NodeFilter.FILTER_REJECT;
+      return ORIG_HAS.test(n.nodeValue) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+    }
+  });
+  const list = []; let n;
+  while ((n = w.nextNode())) list.push(n);
+  list.forEach(node => {
+    const t = node.nodeValue;
+    ORIG_RUN.lastIndex = 0;
+    const frag = document.createDocumentFragment();
+    let last = 0, m;
+    while ((m = ORIG_RUN.exec(t))){
+      if (m.index > last) frag.appendChild(document.createTextNode(t.slice(last, m.index)));
+      const sp = document.createElement('span');
+      sp.className = 'orig'; sp.textContent = m[0];
+      frag.appendChild(sp);
+      last = m.index + m[0].length;
+    }
+    if (!last) return;
+    if (last < t.length) frag.appendChild(document.createTextNode(t.slice(last)));
+    try { node.parentNode.replaceChild(frag, node); } catch(e){}
+  });
+  // ③ 原文後面若緊跟著「，音譯」的那個逗號，一起收走，免得留下「（，yada）」
+  root.querySelectorAll('.orig').forEach(el => {
+    const nx = el.nextSibling;
+    if (!nx || nx.nodeType !== 3) return;
+    const pv = el.previousSibling;
+    // 括號裡的「原文，音譯」：音譯可能是拉丁字（yada）也可能是中文（雅達），都要收掉逗號
+    const inParen = pv && pv.nodeType === 3 && /[（(]\s*$/.test(pv.nodeValue);
+    const m = nx.nodeValue.match(inParen ? /^\s*[，,]/
+      : /^\s*[，,](?=\s*[A-Za-z\u00C0-\u024F\u2019'])/);
+    if (!m) return;
+    const sp = document.createElement('span');
+    sp.className = 'orig'; sp.textContent = m[0];
+    nx.nodeValue = nx.nodeValue.slice(m[0].length);
+    el.parentNode.insertBefore(sp, nx);
+  });
+  // ④ 括號裡只有原文的，連括號一起收走，不留空括號
+  root.querySelectorAll('.orig').forEach(el => {
+    const pv = el.previousSibling, nx = el.nextSibling;
+    if (!pv || pv.nodeType !== 3 || !nx || nx.nodeType !== 3) return;
+    const a = (pv.nodeValue.match(/[（(]\s*$/) || [])[0];
+    const z = (nx.nodeValue.match(/^\s*[）)]/) || [])[0];
+    if (!a || !z) return;
+    const s1 = document.createElement('span'); s1.className = 'orig'; s1.textContent = a;
+    const s2 = document.createElement('span'); s2.className = 'orig'; s2.textContent = z;
+    pv.nodeValue = pv.nodeValue.slice(0, -a.length);
+    nx.nodeValue = nx.nodeValue.slice(z.length);
+    el.parentNode.insertBefore(s1, el);
+    el.parentNode.insertBefore(s2, nx);
+  });
+}
+const origOn = () => S.settings.orig !== 0;
+function applyOrig(){
+  try { document.documentElement.dataset.orig = origOn() ? '1' : '0'; } catch(e){}
+}
+function toggleOrig(){
+  S.settings.orig = origOn() ? 0 : 1; save(); applyOrig();
+  const box = $('#sheet'); if (box) vSettings();
+  toast(origOn() ? '顯示希伯來文與希臘文原文' : '不顯示原文，音譯與編號仍保留');
+}
 function applyFS(){ document.documentElement.style.setProperty('--fs', FSV[S.settings.fs] || FSV[1]); }
 function setFS(i){ S.settings.fs = i; save(); applyFS(); vMe(); }
 $('#fsz').onclick = () => { S.settings.fs = (S.settings.fs + 1) % 4; save(); applyFS(); toast('字級：' + ['標準','大','特大','超大'][S.settings.fs]); };
@@ -1962,6 +2047,12 @@ function vSettings(){
     <div class="btnrow">${['標準','大','特大','超大'].map((n,i)=>
       `<button class="btn ${S.settings.fs===i?'pri':''}" onclick="setFS2(${i})">${n}</button>`).join('')}</div>
     <p class="muted" style="margin:10px 0 0;font-size:.78em">預設為「大」。長輩使用建議「特大」以上。</p>
+    <p class="eyebrow" style="margin-top:22px">閱讀</p>
+    <div class="btnrow">
+      <button class="btn ${origOn()?'pri':''}" onclick="toggleOrig()">${origOn()?'✓ ':''}顯示原文</button>
+      <button class="btn ${S.settings.follow?'pri':''}" onclick="toggleFollow();vSettings()">${S.settings.follow?'✓ ':''}朗讀時自動捲動</button>
+    </div>
+    <p class="muted" style="margin:10px 0 0;font-size:.78em">關掉原文之後，希伯來文與希臘文的原字不顯示，音譯與 Strong's 編號仍然保留，全文讀得下去。</p>
     <div class="btnrow" style="margin-top:20px">
       <button class="btn pri wide" onclick="$('#sheet').classList.remove('on')">完成</button></div>`);
 }
@@ -2311,32 +2402,60 @@ function lessonSpeechUnits(root){
   const out = [];
   // 起點依課次錯開，免得每一課都用同一句話開場
   ldInit(CUR && CUR.lesson ? (parseInt(String(CUR.lesson).replace(/\D/g, ''), 10) || 0) : 0);
-  const pushClean = (raw, numbered, el) => {
-    let t = spkClean(spkStripRefParens(raw));
-    if (numbered) t = spkNum(t.trim());
-    t = t.trim();
-    if (t) out.push({ t, el: el || null });
+  wrapSentences();                       // 先確保每一句都包在 span.ms 裡，朗讀才能標到句
+  /* 取出這個元素的逐句片段。畫過線的句子會被 mark 切成好幾個 span，
+     所以依 data-s 分組，同一句的幾塊算一句。 */
+  const msSents = el => {
+    const bucket = {}, order = [];
+    el.querySelectorAll('span.ms').forEach(s => {
+      const k = s.dataset.s;
+      if (!bucket[k]){ bucket[k] = []; order.push(k); }
+      bucket[k].push(s);
+    });
+    if (!order.length) return null;
+    order.sort((a, b) => a - b);
+    return order.map(k => ({ raw: bucket[k].map(x => x.textContent).join(''), els: bucket[k] }));
+  };
+  /* 把一個元素拆成逐句單元。lead 只加在第一句上，其餘照唸。 */
+  const pushSents = (el, lead, dropLead) => {
+    const ss = msSents(el);
+    if (!ss){                                     // 沒有斷句（太短或不在斷句範圍）就整塊當一句
+      let t = spkClean(spkStripRefParens(el.textContent)).trim();
+      if (dropLead) t = t.replace(dropLead, '');
+      if (lead) t = lead + t;
+      if (t.trim()) out.push({ t, els:[el] });
+      return;
+    }
+    ss.forEach((s, i) => {
+      let t = spkClean(spkStripRefParens(s.raw)).trim();
+      if (i === 0){
+        if (dropLead) t = t.replace(dropLead, '');
+        if (lead) t = lead + t;
+      }
+      if (t.trim()) out.push({ t, els: s.els });
+    });
   };
   const walk = el => {
     if (!el || el.nodeType !== 1) return;
     if (el.tagName === 'DETAILS' && el.classList.contains('deeper')){
       const qEl = el.querySelector('summary'), aEl = el.querySelector('.deeper-a');
       const qRaw = (qEl ? qEl.textContent : '').replace(/^想更深？\s*/, '').replace(/^Think deeper\s*[—–-]\s*/, '');
-      let q = spkClean(spkStripRefParens(qRaw));
-      let a = spkClean(spkStripRefParens(aEl ? aEl.textContent : ''));
-      q = q.trim(); a = a.trim();
-      if (q || a){
-        const sp = lang()==='en' ? ' ' : '　';
-        const t = q ? ldPick('deepQ') + q + (a ? sp + ldPick('deepA') + a : '')
-                    : ldPick('deepA') + a;
-        out.push({ t, el });
+      const q = spkClean(spkStripRefParens(qRaw)).trim();
+      if (q) out.push({ t: ldPick('deepQ') + q, els: qEl ? [qEl] : [el] });
+      if (aEl){                                   // 回答逐句，標記才會跟著走
+        const lead = ldPick('deepA');
+        aEl.querySelectorAll('p').forEach((p, i) => pushSents(p, i === 0 ? lead : ''));
+        if (!aEl.querySelector('p')) pushSents(aEl, lead);
       }
       return;
     }
     if (el.tagName === 'DETAILS' && el.classList.contains('blk')){
       const bh = el.querySelector('.bh'), inner = el.querySelector('.inner');
-      pushClean(bh ? bh.textContent : '', false, el);
-      if (inner) pushClean(inner.textContent, false, el);
+      if (bh){
+        const t = spkClean(spkStripRefParens(bh.textContent)).trim();
+        if (t) out.push({ t, els:[bh] });
+      }
+      if (inner) Array.from(inner.children).forEach(walk);
       return;
     }
     if (el.tagName === 'H4'){                      // 一、xxx → 第一段，xxx（說法輪著換）
@@ -2344,26 +2463,48 @@ function lessonSpeechUnits(root){
       const m = t.match(/^([一二三四五六七八九十百]+)、\s*(.+)$/);
       if (m) t = ldPick('sect').replace('{n}', m[1]) + m[2];
       else t = spkNum(t);
-      if (t.trim()) out.push({ t: /[。！？]$/.test(t) ? t : t + '。', el });
+      if (t.trim()){
+        const ss = msSents(el);
+        out.push({ t: /[。！？]$/.test(t) ? t : t + '。', els: ss ? ss[0].els : [el] });
+      }
       return;
     }
     if (el.tagName === 'HR') return;
-    if (el.tagName === 'P' || el.tagName === 'DIV'){
-      let t = spkClean(spkStripRefParens(el.textContent)).trim();
-      // 星號是印在紙上的記號，唸出來沒有意義，整句跳過
-      if (/^優先順序標示/.test(t) || /^Priority marks/i.test(t)) return;
+    if (el.tagName === 'P' || el.tagName === 'DIV' || el.tagName === 'LI'){
+      const head = spkClean(spkStripRefParens(el.textContent)).trim();
+      // 星號是印在紙上的記號，唸出來沒有意義，整段跳過
+      if (/^優先順序標示/.test(head) || /^Priority marks/i.test(head)) return;
       let m;
-      if ((m = t.match(/^(第[一二三]化)[｜|]?\s*(.*)$/))){        // 三個化的段標
+      if ((m = head.match(/^(第[一二三]化)[｜|]?\s*(.*)$/))){        // 三個化的段標
         const body = m[2].replace(/（[^）]*）/g, '').replace(/\([^)]*\)/g, '').trim();
-        t = ldPick('hua').replace('{x}', m[1] + (body ? '，' + body : ''));
-      } else if (/^收尾/.test(t)){
-        t = lang()==='en' ? 'Now we close. ' : '我們來收尾。' + t.replace(/^收尾\s*/, '').replace(/（[^）]*）/g, '');
-      } else if ((m = t.match(/^【(.+?)】\s*(.*)$/))){            // 【看】【聽】【想】【講】【行】
-        t = ldPick('step').replace('{x}', '「' + m[1] + '」' + (m[2] ? '，' + m[2] : ''));
-      } else {
-        t = spkNum(t);
+        const ss = msSents(el);
+        out.push({ t: ldPick('hua').replace('{x}', m[1] + (body ? '，' + body : '')),
+                   els: ss ? ss[0].els : [el] });
+        return;
       }
-      if (t.trim()) out.push({ t, el });
+      if (/^收尾/.test(head)){
+        const ss = msSents(el);
+        out.push({ t: lang()==='en' ? 'Now we close. ' : '我們來收尾。', els: ss ? ss[0].els : [el] });
+        return;
+      }
+      if ((m = head.match(/^【(.+?)】\s*(.*)$/))){                   // 【看】【聽】【想】【講】【行】
+        const ss = msSents(el);
+        out.push({ t: ldPick('step').replace('{x}', '「' + m[1] + '」' + (m[2] ? '，' + m[2] : '')),
+                   els: ss ? ss[0].els : [el] });
+        return;
+      }
+      // 一般段落：逐句。討論題號 1. 2. 只加在第一句上
+      const ss = msSents(el);
+      if (!ss){
+        const t = spkNum(head);
+        if (t.trim()) out.push({ t, els:[el] });
+        return;
+      }
+      ss.forEach((s, i) => {
+        let t = spkClean(spkStripRefParens(s.raw)).trim();
+        if (i === 0) t = spkNum(t);
+        if (t.trim()) out.push({ t, els: s.els });
+      });
       return;
     }
     Array.from(el.children).forEach(walk);
@@ -2382,18 +2523,19 @@ function speechSegs(units){
     if (u.t.length <= 240) return flat.push(u);
     let buf = '';
     (u.t.match(/[^。！？；]*[。！？；]|[^。！？；]+$/g) || [u.t]).forEach(s => {
-      if ((buf + s).length > 240 && buf){ flat.push({ t:buf, el:u.el }); buf = s; }
+      if ((buf + s).length > 240 && buf){ flat.push({ t:buf, els:u.els }); buf = s; }
       else buf += s;
     });
-    if (buf.trim()) flat.push({ t:buf, el:u.el });
+    if (buf.trim()) flat.push({ t:buf, els:u.els });
   });
   flat.forEach(u => {
     const last = segs[segs.length - 1];
-    if (last && last.t.length < 60 && last.t.length + u.t.length <= 240){
+    // 逐句朗讀：只把「弟兄姊妹，」這類很短的碎句併進下一句，其餘一句一段
+    if (last && last.t.length < 14 && last.t.length + u.t.length <= 90){
       last.t += (/[。！？；]$/.test(last.t) ? '' : '。') + u.t;
-      if (u.el && last.els.indexOf(u.el) < 0) last.els.push(u.el);
+      (u.els || []).forEach(e => { if (last.els.indexOf(e) < 0) last.els.push(e); });
     } else {
-      segs.push({ t: u.t, els: u.el ? [u.el] : [] });
+      segs.push({ t: u.t, els: (u.els || []).slice() });
     }
   });
   return segs.filter(s => s.t.trim());
@@ -2408,7 +2550,7 @@ function spkClear(){
   SPK_LAST.forEach(e => e.classList.remove('spk-now'));
   SPK_LAST = [];
 }
-function spkMark(seg){
+function spkMark(seg, noScroll){
   spkClear();
   if (!seg || !seg.els || !seg.els.length) return;
   const els = seg.els.filter(e => e && e.isConnected);
@@ -2420,13 +2562,27 @@ function spkMark(seg){
   });
   els.forEach(e => e.classList.add('spk-now'));
   SPK_LAST = els;
-  if (!S.settings.follow) return;
+  if (noScroll || !S.settings.follow) return;
   if (Date.now() < SPK.holdScroll) return;        // 使用者剛自己捲過，先別搶畫面
   SPK.auto = true;
   clearTimeout(SPK.autoT);
   SPK.autoT = setTimeout(() => { SPK.auto = false; }, 900);
   try { els[0].scrollIntoView({ behavior:'smooth', block:'center' }); }
   catch(e){ try { els[0].scrollIntoView(); } catch(e2){} }
+}
+/* 畫線會整個重繪課文，舊的句子元素就失效了，朗讀標示會跟著不見。
+   這裡在重繪後照同樣規則重建一次段落，把元素換成新的，再把標示點回原位。
+   句數對不上（理論上不會，畫線只是加 mark 不改文字）就保留原本的，只是暫時不標。 */
+function spkRebind(){
+  if (!SPK.on || !SPK.segs) return;
+  if (CUR.lesson !== SPK.lesson || CUR.depth !== SPK.depth) return;   // 換課或換版本就不接
+  const lb = $('#lbody'); if (!lb) return;
+  let fresh;
+  try { fresh = speechSegs(lessonSpeechUnits(lb)); } catch(e){ return; }
+  if (!fresh || fresh.length !== SPK.segs.length) return;
+  SPK.segs.forEach((s, i) => { s.els = fresh[i].els; });
+  SPK_LAST = [];
+  spkMark(SPK.segs[SPK.i], true);                 // 接回標示，但不搶畫面
 }
 async function keepAwake(on){
   try {
@@ -2515,8 +2671,11 @@ function spkPlay(k){
     a.onerror = () => { if (my === SPK.token) bySys(); };
     const p = a.play();
     if (p && p.catch) p.catch(() => { if (my === SPK.token) bySys(); });
-    const nx = SPK.segs[k + 1];                 // 先把下一段抓好，接起來不會卡
-    if (nx) rvPiece(sayFix(nx.t)).catch(()=>{});
+    // 句子短，多抓兩段在手上，句與句之間才不會有空檔
+    for (let d = 1; d <= 2; d++){
+      const nx = SPK.segs[k + d];
+      if (nx) rvPiece(sayFix(nx.t)).catch(()=>{});
+    }
   }).catch(() => { if (my === SPK.token) bySys(); });
 }
 /* ===== 整課語音預先下載 =====
@@ -2559,6 +2718,7 @@ function saySegs(segs, title){
   if (!segs || !segs.length) return;
   rvStop(); rvUnlock();
   SPK.on = true; SPK.pause = false; SPK.segs = segs; SPK.total = segs.length; SPK.title = title || '';
+  SPK.lesson = CUR.lesson; SPK.depth = CUR.depth;   // 重繪後要確認還是同一課、同一本才接得回去
   speakMark(true); keepAwake(true); spkMedia(); drawBar();
   spkPlay(0);
 }
