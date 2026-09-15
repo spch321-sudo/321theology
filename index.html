@@ -684,6 +684,7 @@ async function boot(){
   applyFS();
   applyOrig();
   bgWatch();
+  SPK.diag = Array.isArray(S.spkDiag) ? S.spkDiag : [];
   route('today');
   try { watchLang(); } catch(e){}
   setTimeout(() => { const b = $('#boot'); if (b){ b.classList.add('off');
@@ -2110,8 +2111,42 @@ function vSettings(){
     <div class="btnrow">
       <button class="btn wide" onclick="askReset()">⟳ 檢查更新（清除快取後重載）</button></div>
     <p class="muted" style="margin:10px 0 0;font-size:.78em">如果換了新版卻看不到新功能，按這裡。畫線、筆記、收藏都存在裝置裡，不會被清掉。</p>
+    <div class="btnrow" style="margin-top:10px">
+      <button class="btn wide" onclick="vSpkDiag()">🩺 朗讀診斷</button></div>
+    <p class="muted" style="margin:10px 0 0;font-size:.78em">朗讀如果在背景斷掉，這裡會記下是卡在哪一關，可以整段複製給我看。</p>
     <div class="btnrow" style="margin-top:20px">
       <button class="btn pri wide" onclick="$('#sheet').classList.remove('on')">完成</button></div>`);
+}
+/* 朗讀診斷：把 play() 被擋、音檔載入失敗這些事記下來，出狀況時看得到是哪一關 */
+function spkDiagText(){
+  const d = (S.spkDiag || []);
+  const nm = { play:'播放被擋', padplay:'無聲墊底被擋', fetch:'抓不到音檔',
+               mediaerr:'音檔載入失敗', giveup:'重試太多次放棄' };
+  const head = ['語音：' + curVoiceKey() + '（' + (rvOn() ? '真人' : '裝置內建') + '）',
+                '背景播放：' + (bgOn() ? '開' : '關'),
+                '播放器數：' + ((rv.els || []).length),
+                '目前段：' + SPK.i + '／' + (SPK.total || 0)].join('　');
+  if (!d.length) return head + '\n\n目前沒有記錄到任何異常。';
+  return head + '\n\n' + d.map(x =>
+    x.t + '　第' + x.k + '段　' + (x.hid ? '背景' : '前景') + '　' + (nm[x.w] || x.w) + (x.x ? '：' + x.x : '')
+  ).join('\n');
+}
+function vSpkDiag(){
+  const t = spkDiagText();   // 文字方塊不會被語言監看掃到，這裡自己轉
+  sheet(`<p class="eyebrow">朗讀診斷</p>
+    <h2 class="big">朗讀在哪一關卡住</h2>
+    <textarea readonly rows="12" style="width:100%;font-size:.7em;line-height:1.7;
+      border:1px solid var(--line);border-radius:12px;padding:10px;background:var(--bg);
+      color:var(--ink);font-family:ui-monospace,monospace">${esc(lang() === 'zh-Hant' ? t : tr(t))}</textarea>
+    <div class="btnrow" style="margin-top:12px">
+      <button class="btn" onclick="spkDiagCopy()">複製</button>
+      <button class="btn" onclick="S.spkDiag=[];SPK.diag=[];save();vSpkDiag()">清除記錄</button></div>
+    <p class="muted" style="margin:12px 0 0;font-size:.78em">背景朗讀如果斷掉，回到這裡按「複製」，把內容貼給我，就知道是被系統擋下來、還是網路沒接上。</p>`);
+}
+function spkDiagCopy(){
+  const t = lang() === 'zh-Hant' ? spkDiagText() : tr(spkDiagText());
+  try { navigator.clipboard.writeText(t).then(() => toast('已複製')).catch(() => toast('請長按選取複製')); }
+  catch(e){ toast('請長按選取複製'); }
 }
 function setFS2(i){ S.settings.fs = i; save(); applyFS(); vSettings(); }
 function setVoice2(k){ if (lang()==='en') S.settings.voiceEn = k; else S.settings.voice = k; save(); rv.url = {}; vSettings(); }
@@ -2198,37 +2233,19 @@ function rvMake(){
   return a;
 }
 function rvPair(){
-  if (!rv.els){ rv.els = [rvMake(), rvMake()]; rv.cur = 0; rv.audio = rv.els[0]; }
+  if (!rv.els){ rv.els = [rvMake()]; rv.cur = 0; rv.audio = rv.els[0]; }
   return rv.els;
 }
 function rvAudio(){ const e = rvPair(); rv.audio = e[rv.cur]; return rv.audio; }
-function rvIdle(){ const e = rvPair(); return e[1 - rv.cur]; }
-/* 墊底的無聲循環：只在等音檔的時候開，接回來就關 */
-function rvHold(on){
-  try {
-    if (on){
-      if (!rv.hold){
-        rv.hold = rvMake(); rv.hold.loop = true; rv.hold.src = SILENT_LOOP;
-        try { rv.hold.volume = 0.001; } catch(e){}
-      }
-      const p = rv.hold.play(); if (p && p.catch) p.catch(()=>{});
-    } else if (rv.hold){ rv.hold.pause(); }
-  } catch(e){}
-}
-// iOS 必須在使用者手勢中先播一段無聲，之後才准許程式播放——兩個播放器都要解鎖
+/* iOS 必須在使用者手勢裡先讓這個播放器出聲，之後才准許程式繼續播。
+   每次按下朗讀都重新拿一次，而且拿到之後「不要」再 pause——
+   之前那個非同步的 pause 會把剛開始的朗讀按掉。 */
 function rvUnlock(){
-  if (rv.unlocked) return;
-  const els = rvPair();
-  els.forEach(a => {
-    try { a.loop = false; a.src = SILENT;
-      const p = a.play();
-      if (p && p.then) p.then(() => { try { a.pause(); } catch(e){} }).catch(()=>{});
-    } catch(e){}
-  });
-  try { if (!rv.hold){ rv.hold = rvMake(); rv.hold.loop = true; rv.hold.src = SILENT_LOOP;
-        try { rv.hold.volume = 0.001; } catch(e){} }
-    const p = rv.hold.play();
-    if (p && p.then) p.then(() => { try { rv.hold.pause(); } catch(e){} }).catch(()=>{});
+  const a = rvAudio();
+  try {
+    if (!a.src){ a.loop = true; a.src = SILENT_LOOP; a.dataset.pad = '1'; }
+    const p = a.play();
+    if (p && p.catch) p.catch(()=>{});
   } catch(e){}
   rv.unlocked = true;
 }
@@ -2326,9 +2343,9 @@ function rvStop(){
   rv.token++; rv.active = false; rv.queue = [];
   (rv.els || (rv.audio ? [rv.audio] : [])).forEach(a => {
     try { a.pause(); } catch(e){}
-    a.onended = null; a.onerror = null; try { delete a.dataset.k; } catch(e){}
+    a.onended = null; a.onerror = null;
+    try { delete a.dataset.k; a.dataset.pad = ''; a.loop = false; } catch(e){}
   });
-  rvHold(false);
   try { if (window.speechSynthesis) speechSynthesis.cancel(); } catch(e){}
   try { if (navigator.mediaSession) navigator.mediaSession.playbackState = 'none'; } catch(e){}
 }
@@ -2820,10 +2837,9 @@ function bgWatch(){
     if (document.hidden){
       if (!bgOn() && !SPK.pause){ SPK.bgPaused = true; togglePause(); }
       // 背景時讓無聲循環一起跑著，接縫再短也不會被系統收走音訊焦點
-      else if (bgOn() && !SPK.pause) rvHold(true);
+      else if (bgOn() && !SPK.pause) spkFetchNext(SPK.i + 1, SPK.token);   // 先把下一段抓在手上
     } else {
       if (SPK.bgPaused){ SPK.bgPaused = false; if (SPK.pause) togglePause(); }
-      if (!SPK.buffering) rvHold(false);
       keepAwake(true);                       // 螢幕鎖在背景會自動放掉，回來要再要一次
       drawBar();
       if (SPK.stopWhy){                      // 背景裡斷掉的話，回來說一聲，不要讓人莫名其妙
@@ -2880,12 +2896,12 @@ function togglePause(){
   try {
     if (SPK.pause){
       (rv.els || []).forEach(a => { try { a.pause(); } catch(e){} });
-      rvHold(false);
       if (window.speechSynthesis) speechSynthesis.pause();
     } else {
       if (window.speechSynthesis) speechSynthesis.resume();
       const a = rv.els && rv.els[rv.cur];
-      const dead = !a || !a.src || a.ended || (a.duration && a.currentTime >= a.duration - 0.05);
+      const dead = !a || !a.src || a.ended || a.dataset.pad === '1'
+                   || (a.duration && a.currentTime >= a.duration - 0.05);
       if (SPK.buffering || dead) spkPlay(SPK.i);       // 卡在等音檔或那一段已播完：重新接上
       else { const p = a.play(); if (p && p.catch) p.catch(() => spkPlay(SPK.i)); }
     }
@@ -2898,96 +2914,104 @@ function spkStep(d){
   const k = Math.max(0, Math.min(SPK.segs.length - 1, SPK.i + d));
   SPK.pause = false;
   (rv.els || []).forEach(a => { try { a.pause(); delete a.dataset.k; } catch(e){} });
-  rvHold(false);
+  SPK.next = null;
   spkPlay(k);
 }
-/* ===== 逐段播放：兩個播放器接力 =====
-   接縫是關鍵。A 播完的那一瞬間如果還要等網路，手機就把音訊焦點收走，
-   螢幕鎖著時整個朗讀會停在那裡。所以 A 在播的時候就先把下一段載進 B，
-   A 的 ended 一觸發，同一拍直接叫 B.play()——中間沒有空檔。 */
-/* 備料標記帶上這一輪的編號，換課、重按之後不會接到上一輪留下的音檔 */
-const spkKey = (my, k) => my + ':' + k;
-function spkArm(el, k, my){
+/* ===== 逐段播放：從頭到尾只用一個播放器 =====
+   背景播放的許可是綁在「正在播的那一個 element」上的。一換 element、
+   或是在接縫上等網路，系統就把音訊焦點收走，螢幕鎖著時朗讀會停在那裡。
+   所以這裡只用 rv.audio 一個播放器，下一段先備在 SPK.next，
+   ended 的當下同一拍換 src 再 play()，中間沒有 await，也沒有第二個播放器。 */
+function spkDiag(what, extra){
+  try {
+    SPK.diag = SPK.diag || [];
+    SPK.diag.push({ t: new Date().toTimeString().slice(0,8), k: SPK.i,
+                    hid: document.hidden ? 1 : 0, w: what, x: String(extra || '').slice(0,90) });
+    if (SPK.diag.length > 40) SPK.diag.shift();
+    S.spkDiag = SPK.diag; save();
+  } catch(e){}
+}
+/* 把第 k 段的音檔先抓好放在 SPK.next，ended 的時候才不必等 */
+function spkFetchNext(k, my){
   const seg = SPK.segs && SPK.segs[k];
-  if (!seg) return Promise.resolve(false);
-  if (el.dataset.k === spkKey(my, k) && el.src) return Promise.resolve(true);
+  if (!seg){ SPK.next = null; return Promise.resolve(null); }
+  if (SPK.next && SPK.next.k === k && SPK.next.my === my) return Promise.resolve(SPK.next.url);
   return rvPiece(sayFix(seg.t)).then(url => {
-    if (my !== SPK.token) return false;          // 這一輪已經被取消，別把舊音檔裝上去
-    el.onended = null; el.onerror = null;
-    el.src = url; el.dataset.k = spkKey(my, k);
-    try { el.load(); } catch(e){}
-    return true;
-  });
+    if (my !== SPK.token) return null;
+    SPK.next = { k, url, my };
+    return url;
+  }).catch(e => { spkDiag('fetch', e && e.message); return null; });
 }
-/* 下一段還沒到手：先讓無聲循環墊著，抓到就接回來。螢幕關著時絕不改用裝置語音——
-   系統會把它停掉，使用者只會聽見忽然沒聲音。 */
-function spkHold(k, my, tries){
+/* 同一個播放器切到無聲循環墊著——不是另開一個 element，音訊焦點才不會換手 */
+function spkPad(on){
+  const a = rvAudio();
+  if (on){
+    if (a.dataset.pad === '1') return;
+    a.onended = null; a.onerror = null;      // 別讓上一段的處理器接到無聲的結尾
+    a.dataset.pad = '1'; a.loop = true; a.src = SILENT_LOOP;
+    const p = a.play();
+    // 墊底播到一半被真正的音檔換掉，會丟 AbortError，那是正常的，不記進診斷
+    if (p && p.catch) p.catch(e => { if (!e || e.name !== 'AbortError') spkDiag('padplay', e && e.name); });
+  } else {
+    a.dataset.pad = ''; a.loop = false;
+    try { a.pause(); } catch(e){}            // 不接音檔了就停下來，免得無聲一直循環
+  }
+}
+/* 等下一段：墊無聲，抓到就接上。螢幕關著時絕不改用裝置語音——系統會把它停掉 */
+function spkWait(k, my, tries){
   if (my !== SPK.token) return;
-  SPK.buffering = true; drawBar(); rvHold(true);
-  spkArm(rvAudio(), k, my).then(ok => {
+  SPK.buffering = true; drawBar(); spkPad(true);
+  spkFetchNext(k, my).then(url => {
     if (my !== SPK.token) return;
-    if (!ok) return stopSpeak();
-    rvHold(false); spkAt(k, my);
-  }).catch(() => {
-    if (my !== SPK.token) return;
+    if (url) return spkAt(k, my);
     const n = (tries || 0) + 1;
-    if (document.hidden && n > 12){ SPK.stopWhy = 'net'; return stopSpeak(); }
-    if (n <= 6 || document.hidden) return setTimeout(() => spkHold(k, my, n), Math.min(800 * n, 5000));
-    rvHold(false);
-    SPK.buffering = false; drawBar();
-    sysChunk(sayFix(SPK.segs[k].t), () => { if (my === SPK.token) spkGo(k + 1); });
+    if (document.hidden && n > 12){ SPK.stopWhy = 'net'; spkDiag('giveup'); return stopSpeak(); }
+    if (n <= 6 || document.hidden) return setTimeout(() => spkWait(k, my, n), Math.min(800 * n, 5000));
+    spkPad(false); SPK.buffering = false; drawBar();
+    sysChunk(sayFix(SPK.segs[k].t), () => { if (my === SPK.token) spkWait(k + 1, my, 0); });
   });
 }
-/* el 已經裝好第 k 段，從這裡開始播，並把下一段備到另一個播放器上 */
+/* 第 k 段的音檔已經在 SPK.next 手上，從這裡開始播 */
 function spkAt(k, my){
   if (my !== SPK.token) return;
   const seg = SPK.segs && SPK.segs[k];
   if (!seg) return stopSpeak();
-  const el = rvAudio();
-  SPK.i = k; SPK.buffering = false;
+  const url = SPK.next && SPK.next.k === k ? SPK.next.url : null;
+  if (!url) return spkWait(k, my, 0);
+  const a = rvAudio();
+  SPK.i = k; SPK.buffering = false; SPK.next = null;
   spkMark(seg); drawBar();
-  el.onerror = () => { if (my === SPK.token) spkHold(k, my, 9); };
-  el.onended = () => {
+  a.dataset.pad = ''; a.loop = false;
+  a.onerror = () => { spkDiag('mediaerr', a.error && a.error.code); if (my === SPK.token) spkWait(k, my, 9); };
+  a.onended = () => {
     if (my !== SPK.token) return;
     const nx = k + 1;
     if (!SPK.segs[nx]) return stopSpeak();
-    const other = rvIdle();
-    if (other.dataset.k === spkKey(my, nx) && other.src){
-      rv.cur = 1 - rv.cur;                 // 換手：下一拍就由 other 接著播
-      spkAt(nx, my);                       // 裡面同步呼叫 play()，接縫沒有空檔
-    } else {
-      spkHold(nx, my, 0);
-    }
+    // 這裡是全部的重點：同一拍換 src 再 play()，不 await、不換 element
+    if (SPK.next && SPK.next.k === nx && SPK.next.my === my) spkAt(nx, my);
+    else { spkPad(true); spkWait(nx, my, 0); }
   };
-  const p = el.play();
-  if (p && p.catch) p.catch(() => { if (my === SPK.token) spkHold(k, my, 9); });
+  a.src = url;
+  const p = a.play();
+  if (p && p.catch) p.catch(e => { spkDiag('play', e && e.name); if (my === SPK.token) spkWait(k, my, 9); });
   try { if (navigator.mediaSession) navigator.mediaSession.playbackState = 'playing'; } catch(e){}
-  spkArm(rvIdle(), k + 1, my).catch(()=>{});   // 先把下一段備好
-  for (let d = 2; d <= (document.hidden ? 5 : 3); d++){   // 再往後多抓幾段進快取
+  spkFetchNext(k + 1, my);                                  // 下一段先備好
+  for (let d = 2; d <= (document.hidden ? 6 : 3); d++){      // 再往後多抓幾段進快取
     const s = SPK.segs[k + d];
     if (s) rvPiece(sayFix(s.t)).catch(()=>{});
   }
 }
-function spkGo(k){
-  const my = SPK.token;
-  if (!SPK.segs || !SPK.segs[k]) return stopSpeak();
-  SPK.i = k; spkMark(SPK.segs[k]); drawBar();
-  spkHold(k, my, 0);
-}
 function spkPlay(k){
   const my = ++SPK.token;
-  SPK.i = k;
+  SPK.i = k; SPK.next = null;
   const seg = SPK.segs && SPK.segs[k];
   if (!seg){ return stopSpeak(); }
   spkMark(seg); drawBar();
-  if (!rvOn()){                            // 裝置內建語音：沒有音檔可接力，照舊
+  if (!rvOn()){                              // 裝置內建語音：沒有音檔可接，照舊
     SPK.buffering = false; drawBar();
     return sysChunk(sayFix(seg.t), () => { if (my === SPK.token) spkPlay(k + 1); });
   }
-  rvPair();
-  const el = rvAudio();
-  if (el.dataset.k === spkKey(my, k) && el.src) return spkAt(k, my);
-  spkHold(k, my, 0);
+  spkWait(k, my, 0);
 }
 /* ===== 整課語音預先下載 =====
    rvPiece 本來就會把抓到的音檔存進 IndexedDB，這裡只是先替整課跑一遍，
@@ -3970,6 +3994,7 @@ function toast(msg){
   clearTimeout(TT); TT = setTimeout(() => t.style.opacity = 0, 1600);
 }
 
+window.vSpkDiag = vSpkDiag; window.spkDiagCopy = spkDiagCopy;
 window.openLesson = openLesson; window.setDepth = setDepth; window.toggleStep = toggleStep;
 window.saveNote = saveNote; window.showLex = showLex; window.showVerse = showVerse;
 window.vLexicon = vLexicon; window.vVerses = vVerses; window.vDiag = vDiag; window.vRevisions = vRevisions;
