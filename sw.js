@@ -1,6 +1,6 @@
 /* 321系統神學 Service Worker（單檔版） */
-const CACHE_VERSION = 'g321theo-v7.3.1-k3m-vp1023';
-const CORE = ['./', './index.html', './manifest.json'];
+const CACHE_VERSION = 'g321theo-v7.3.1-k3m-vp1023-co1';
+const CORE = ['./', './index.html', './manifest.json', './coread.js', './peerjs.min.js'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE_VERSION).then(c => c.addAll(CORE)).then(() => self.skipWaiting()));
